@@ -62,7 +62,7 @@ will produce
 ```python
 @PyBack(on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end)
 def method()
-	pass
+    pass
 
 method()
 ```
@@ -76,7 +76,7 @@ custom_pyback = PyBack(
 
 @custom_pyback
 def method():
-	pass
+    pass
 
 method()
 ```
