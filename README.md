@@ -16,7 +16,7 @@
 
 ### Usage
 
-#### 1.```pyback``` callback decorator
+#### 1. ```pyback``` callback decorator
 
 ##### Callback methods used in example
 ```python
@@ -58,7 +58,7 @@ will produce
 >>>Failed with exception EpicFailure
 >>>ending...
 ```
-#### 2.```PyBack``` callback class
+#### 2. ```PyBack``` callback class
 ```python
 @PyBack(on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end)
 def method()
@@ -68,7 +68,7 @@ method()
 ```
 Will produce the same results as `pyback` decorator. Can be extended further.
 
-#### 3.Preconfigured ```PyBack``` callback custom class
+#### 3. Preconfigured ```PyBack``` callback custom class
 ```python
 custom_pyback = PyBack(
     on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end
