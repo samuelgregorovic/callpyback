@@ -11,14 +11,14 @@
 	- `PyBack` decorator class
 	- predefined instance of `PyBack` class for more readable code
 
-###Instalation
+### Instalation
 `pip install pyback`
 
-###Usage
+### Usage
 
 ####```pyback``` callback decorator
 
-##### example callback methods
+##### Callback methods used in example
 ```python
 def func_on_success():
     print("success!")
@@ -29,7 +29,7 @@ def func_on_fail(ex):
 def func_on_end():
     print("ending...")
 ```
-##### case #1 - normal execution without exception
+##### Case #1 - normal execution without exception
 ```python
 @pyback(on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end)
 def method_ok():
@@ -43,7 +43,7 @@ will produce
 >>>success!
 >>>ending...
 ```
-##### case #2 - execution with exception
+##### Case #2 - execution with exception
 ```python
 @pyback(on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end)
 def method_fail():
@@ -58,7 +58,7 @@ will produce
 >>>Failed with exception EpicFailure
 >>>ending...
 ```
-####```PyBack``` callback class
+#### ```PyBack``` callback class
 ```python
 @PyBack(on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end)
 def method()
@@ -68,7 +68,7 @@ method()
 ```
 Will produce the same results as `pyback` decorator. Can be extended further.
 
-####Preconfigured ```PyBack``` callback custom class
+#### Preconfigured ```PyBack``` callback custom class
 ```python
 custom_pyback = PyBack(
     on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end
