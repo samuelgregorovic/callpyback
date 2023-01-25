@@ -9,7 +9,7 @@ def _callback(func, on_success, on_fail, on_end, *func_args, **func_kwargs):
         on_end()
 
 
-def pyback(on_success, on_fail, on_end):
+def callpyback(on_success, on_fail, on_end):
     def wrapper(func):
         def inner(*func_args, **func_kwargs):
             return _callback(
@@ -26,7 +26,7 @@ def pyback(on_success, on_fail, on_end):
     return wrapper
 
 
-class PyBack:
+class CallPyBack:
     def __init__(self, on_success, on_fail, on_end):
         self.on_success = on_success
         self.on_fail = on_fail
