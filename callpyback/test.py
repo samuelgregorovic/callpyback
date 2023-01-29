@@ -38,7 +38,7 @@ custom_callback = CallPyBack(
 @custom_callback
 def test_custom_cls(x, func_result):
     print("test custom cls")
-    raise Exception("failEpic")
+    raise Exception("exsss")
     # return 0
 
 
