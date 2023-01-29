@@ -26,38 +26,6 @@ class CallPyBack:
         self.pass_vars = pass_vars
         self.local_vars = {}
 
-    def run_on_call_func(self, func_args, func_kwargs):
-        on_call_kwargs = self.get_on_call_kwargs(func_args, func_kwargs)
-        if inspect.iscoroutinefunction(self.on_call):
-            asyncio.run(self.on_call(**on_call_kwargs))
-        else:
-            self.on_call(**on_call_kwargs)
-
-    def run_success_func(self, func_result, func_args, func_kwargs):
-        success_kwargs = self.get_success_kwargs(func_result, func_args, func_kwargs)
-        if inspect.iscoroutinefunction(self.on_success):
-            asyncio.run(self.on_success(**success_kwargs))
-        else:
-            self.on_success(**success_kwargs)
-
-    def run_failure_func(self, func_exception, func_args, func_kwargs):
-        failure_kwargs = self.get_failure_kwargs(func_exception, func_args, func_kwargs)
-        if inspect.iscoroutinefunction(self.on_failure):
-            asyncio.run(self.on_failure(**failure_kwargs))
-        else:
-            self.on_failure(**failure_kwargs)
-
-    def run_on_end_func(
-        self, func_result, func_exception, func_args, func_kwargs, func_scope_vars
-    ):
-        on_end_kwargs = self.get_on_end_kwargs(
-            func_result, func_exception, func_args, func_kwargs, func_scope_vars
-        )
-        if inspect.iscoroutinefunction(self.on_end):
-            asyncio.run(self.on_end(**on_end_kwargs))
-        else:
-            self.on_end(**on_end_kwargs)
-
     def __call__(self, func):
         def tracer(frame, event, arg):
             if event == "return":
@@ -89,6 +57,36 @@ class CallPyBack:
 
         return wrapper
 
+    def run_callback_func(self, func, func_kwargs):
+        if inspect.iscoroutinefunction(self.on_call):
+            asyncio.run(func(**func_kwargs))
+        else:
+            func(func_kwargs)
+
+    def run_on_call_func(self, func_args, func_kwargs):
+        on_call_kwargs = self.get_on_call_kwargs(func_args, func_kwargs)
+        self.run_callback_func(self.on_call, on_call_kwargs)
+
+    def run_success_func(self, func_result, func_args, func_kwargs):
+        on_success_kwargs = self.get_on_success_kwargs(
+            func_result, func_args, func_kwargs
+        )
+        self.run_callback_func(self.on_success, on_success_kwargs)
+
+    def run_failure_func(self, func_exception, func_args, func_kwargs):
+        on_failure_kwargs = self.get_on_failure_kwargs(
+            func_exception, func_args, func_kwargs
+        )
+        self.run_callback_func(self.on_failure, on_failure_kwargs)
+
+    def run_on_end_func(
+        self, func_result, func_exception, func_args, func_kwargs, func_scope_vars
+    ):
+        on_end_kwargs = self.get_on_end_kwargs(
+            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+        )
+        self.run_callback_func(self.on_end, on_end_kwargs)
+
     def get_func_scope_vars(self):
         func_scope_vars = {}
         for var_name in self.pass_vars:
@@ -112,7 +110,7 @@ class CallPyBack:
             kwargs["func_kwargs"] = func_kwargs
         return kwargs
 
-    def get_success_kwargs(self, func_result, func_args, func_kwargs):
+    def get_on_success_kwargs(self, func_result, func_args, func_kwargs):
         kwargs = {}
         params = inspect.signature(self.on_success).parameters
         if "func_result" in params:
@@ -123,7 +121,7 @@ class CallPyBack:
             kwargs["func_kwargs"] = func_kwargs
         return kwargs
 
-    def get_failure_kwargs(self, func_exception, func_args, func_kwargs):
+    def get_on_failure_kwargs(self, func_exception, func_args, func_kwargs):
         kwargs = {}
         params = inspect.signature(self.on_failure).parameters
         if "func_exception" in params:
