@@ -2,7 +2,7 @@ from classes import CallPyBack
 
 
 # sample callback methods
-def on_success(func_result, func_args, func_kwargs):
+async def on_success(func_result, func_args, func_kwargs):
     print("----------------------")
     print(f"status: SUCCESS")
     print(f"result: {func_result}")
@@ -10,7 +10,7 @@ def on_success(func_result, func_args, func_kwargs):
     print(f"kwargs: {func_kwargs}")
 
 
-def on_failure(func_exception, func_args, func_kwargs):
+async def on_failure(func_exception, func_args, func_kwargs):
     print("----------------------")
     print(f"status: FAIL")
     print(f"exception: {func_exception}")
@@ -18,7 +18,7 @@ def on_failure(func_exception, func_args, func_kwargs):
     print(f"kwargs: {func_kwargs}")
 
 
-def on_end(func_result, func_exception, func_args, func_kwargs):
+async def on_end(func_result, func_exception, func_args, func_kwargs):
     print("----------------------")
     print(f"status: DONE")
     print(f"result: {func_result}")

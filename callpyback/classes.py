@@ -1,4 +1,5 @@
 import inspect
+import asyncio
 
 
 class CallPyBack:
@@ -8,7 +9,6 @@ class CallPyBack:
         on_failure=lambda *a, **k: None,
         on_end=lambda *a, **k: None,
         default_return=None,
-        # async inspect.iscoroutinefunction(x) ???
     ):
         self.on_success = on_success
         self.on_failure = on_failure
@@ -23,7 +23,10 @@ class CallPyBack:
                 success_kwargs = self.get_success_kwargs(
                     func_result, func_args, func_kwargs
                 )
-                self.on_success(**success_kwargs)
+                if inspect.iscoroutinefunction(self.on_success):
+                    asyncio.run(self.on_success(**success_kwargs))
+                else:
+                    self.on_success(**success_kwargs)
                 return func_result
             except Exception as ex:
                 func_exception = ex
@@ -31,13 +34,19 @@ class CallPyBack:
                 failure_kwargs = self.get_failure_kwargs(
                     func_exception, func_args, func_kwargs
                 )
-                self.on_failure(**failure_kwargs)
+                if inspect.iscoroutinefunction(self.on_failure):
+                    asyncio.run(self.on_failure(**failure_kwargs))
+                else:
+                    self.on_failure(**failure_kwargs)
                 return self.default_return
             finally:
-                on_end = self.get_on_end_kwargs(
+                on_end_kwargs = self.get_on_end_kwargs(
                     func_result, func_exception, func_args, func_kwargs
                 )
-                self.on_end(**on_end)
+                if inspect.iscoroutinefunction(self.on_end):
+                    asyncio.run(self.on_end(**on_end_kwargs))
+                else:
+                    self.on_end(**on_end_kwargs)
                 return self.default_return
 
         return wrapper
