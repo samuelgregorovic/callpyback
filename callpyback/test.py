@@ -2,6 +2,13 @@ from classes import CallPyBack
 
 
 # sample callback methods
+async def on_call(func_args, func_kwargs):
+    print("----------------------")
+    print(f"status: START")
+    print(f"args: {func_args}")
+    print(f"kwargs: {func_kwargs}")
+
+
 async def on_success(func_result, func_args, func_kwargs):
     print("----------------------")
     print(f"status: SUCCESS")
@@ -32,10 +39,11 @@ async def on_end(func_result, func_exception, func_args, func_kwargs, func_scope
 print("#######CUSTOM CLASS TEST#######")
 
 custom_callback = CallPyBack(
+    on_call=on_call,
     on_success=on_success,
     on_failure=on_failure,
     on_end=on_end,
-    default_return=[],
+    default_return=["default", "return", "list", 8],
     pass_vars=["b", "a", "c"],
 )
 

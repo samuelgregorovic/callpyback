@@ -2,7 +2,7 @@ import sys
 import inspect
 import asyncio
 
-
+DEFAULT_ON_CALL_LAMBDA = lambda *a, **k: None
 DEFAULT_ON_SUCCESS_LAMBDA = lambda *a, **k: None
 DEFAULT_ON_FAILURE_LAMBDA = lambda *a, **l: None
 DEFAULT_ON_END_LAMBDA = lambda *a, **k: None
@@ -11,18 +11,27 @@ DEFAULT_ON_END_LAMBDA = lambda *a, **k: None
 class CallPyBack:
     def __init__(
         self,
+        on_call=DEFAULT_ON_CALL_LAMBDA,
         on_success=DEFAULT_ON_SUCCESS_LAMBDA,
         on_failure=DEFAULT_ON_FAILURE_LAMBDA,
         on_end=DEFAULT_ON_END_LAMBDA,
         default_return=None,
         pass_vars=[],
     ):
+        self.on_call = on_call
         self.on_success = on_success
         self.on_failure = on_failure
         self.on_end = on_end
         self.default_return = default_return
         self.pass_vars = pass_vars
         self.local_vars = {}
+
+    def run_on_call_func(self, func_args, func_kwargs):
+        on_call_kwargs = self.get_on_call_kwargs(func_args, func_kwargs)
+        if inspect.iscoroutinefunction(self.on_call):
+            asyncio.run(self.on_call(**on_call_kwargs))
+        else:
+            self.on_call(**on_call_kwargs)
 
     def run_success_func(self, func_result, func_args, func_kwargs):
         success_kwargs = self.get_success_kwargs(func_result, func_args, func_kwargs)
@@ -58,6 +67,7 @@ class CallPyBack:
             sys.setprofile(tracer)
             func_exception, func_result, func_scope_vars = None, None, []
             try:
+                self.run_on_call_func(func_args, func_kwargs)
                 func_result = func(*func_args, **func_kwargs)
                 func_scope_vars = self.get_func_scope_vars()
                 self.run_success_func(func_result, func_args, func_kwargs)
@@ -71,10 +81,11 @@ class CallPyBack:
                 sys.setprofile(None)
                 if self.is_on_end_func_defined():
                     raise func_exception
+                result = func_result if not func_exception else self.default_return
                 self.run_on_end_func(
-                    func_result, func_exception, func_args, func_kwargs, func_scope_vars
+                    result, func_exception, func_args, func_kwargs, func_scope_vars
                 )
-                return func_result if not func_exception else self.default_return
+                return result
 
         return wrapper
 
@@ -91,6 +102,15 @@ class CallPyBack:
             and self.on_end.__name__ == DEFAULT_ON_END_LAMBDA.__name__
             and self.on_end == DEFAULT_ON_END_LAMBDA
         )
+
+    def get_on_call_kwargs(self, func_args, func_kwargs):
+        kwargs = {}
+        params = inspect.signature(self.on_success).parameters
+        if "func_args" in params:
+            kwargs["func_args"] = func_args
+        if "func_kwargs" in params:
+            kwargs["func_kwargs"] = func_kwargs
+        return kwargs
 
     def get_success_kwargs(self, func_result, func_args, func_kwargs):
         kwargs = {}
