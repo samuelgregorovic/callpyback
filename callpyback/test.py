@@ -44,22 +44,36 @@ custom_callback = CallPyBack(
     on_success=on_success,
     on_failure=on_failure,
     on_end=on_end,
-    default_return=["default", "return", "list", 8],
-    pass_vars={"b", "a", "c"},
+    default_return=-1,
+    pass_vars={"id"},
 )
 
 
 @custom_callback
-def test_custom_cls(x, y):
+# async def django_save(model):
+#     print("test custom cls")
+#     id = 2
+#     #    raise Exception("exsss")
+#     return id
+
+
+@custom_callback
+def django_save(model):
     print("test custom cls")
-    a = 666
-    b = 777
-    raise Exception("exsss")
-    c = 890
-    # return 0
+    id = 2
+    #    raise Exception("exsss")
+    return id
 
 
-result = test_custom_cls(5, y=2)
+class Treatment:
+    pass
+
+
+import asyncio
+
+# result = asyncio.run(django_save(model=Treatment()))
+result = django_save(model=Treatment())
+
 
 print(f"----------------------")
 print(f"Return value: {result}")
