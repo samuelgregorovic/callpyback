@@ -36,6 +36,12 @@ class CallPyBack:
 
     def validate_pass_vars(self):
         # validate pass_vars argument
+        if not self.pass_vars:
+            return
+        if self.pass_vars and self.on_end == DEFAULT_ON_END_LAMBDA:
+            raise RuntimeError(
+                "If `pass_vars` are defined, `on_end` callback must be defined too."
+            )
         if not isinstance(self.pass_vars, (list, tuple, set)):
             raise TypeError(
                 "Variables to be passed to on_end callback  must be passed as `list` or `tuple` object."
@@ -96,7 +102,7 @@ class CallPyBack:
 
     def run_callback_func(self, func, func_kwargs):
         # generalised call to given callback func
-        if inspect.iscoroutinefunction(self.on_call):
+        if inspect.iscoroutinefunction(func):
             asyncio.run(func(**func_kwargs))
         else:
             func(**func_kwargs)
@@ -143,7 +149,7 @@ class CallPyBack:
     def get_on_call_kwargs(self, func_args, func_kwargs):
         # constructing on_call kwargs
         kwargs = {}
-        params = inspect.signature(self.on_success).parameters
+        params = inspect.signature(self.on_call).parameters
         if "func_args" in params:
             kwargs["func_args"] = func_args
         if "func_kwargs" in params:
