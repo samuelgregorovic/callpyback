@@ -38,13 +38,14 @@ async def on_end(func_result, func_exception, func_args, func_kwargs, func_scope
 # custom class instance test
 print("#######CUSTOM CLASS TEST#######")
 
+
 custom_callback = CallPyBack(
     on_call=on_call,
     on_success=on_success,
     on_failure=on_failure,
     on_end=on_end,
     default_return=["default", "return", "list", 8],
-    pass_vars=["b", "a", "c"],
+    pass_vars={"b", "a", "c"},
 )
 
 

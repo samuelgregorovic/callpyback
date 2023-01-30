@@ -27,6 +27,35 @@ class CallPyBack:
         self.default_return = default_return
         self.pass_vars = pass_vars
         self.local_vars = {}
+        self.validate_arguments()
+
+    def validate_arguments(self):
+        # validate decorator arguments
+        self.validate_callbacks()
+        self.validate_pass_vars()
+
+    def validate_pass_vars(self):
+        # validate pass_vars argument
+        if not isinstance(self.pass_vars, (list, tuple, set)):
+            raise TypeError(
+                "Variables to be passed to on_end callback  must be passed as `list` or `tuple` object."
+            )
+        for var in self.pass_vars:
+            if not isinstance(var, str):
+                raise TypeError(
+                    "Variables in the `pass_vars` argument must be of type `str`."
+                )
+
+    def validate_callbacks(self):
+        # validate callbacks
+        if not callable(self.on_call):
+            raise TypeError("Specified on_call handler must be a callable!")
+        if not callable(self.on_success):
+            raise TypeError("Specified on_success handler must be a callable!")
+        if not callable(self.on_failure):
+            raise TypeError("Specified on_failure handler must be a callable!")
+        if not callable(self.on_end):
+            raise TypeError("Specified on_end handler must be a callable!")
 
     def __call__(self, func):
         # call of the decorated function
@@ -34,6 +63,7 @@ class CallPyBack:
             # setup for pulling locals
             if event == "return":
                 self.local_vars = frame.f_locals.copy()
+            # potentially add on_yield for generators
 
         def wrapper(*func_args, **func_kwargs):
             # callback and func flow
@@ -52,7 +82,7 @@ class CallPyBack:
                 return self.default_return
             finally:
                 sys.setprofile(None)
-                if self.is_on_end_func_defined():
+                if self.on_end == DEFAULT_ON_END_LAMBDA and func_exception:
                     raise func_exception
                 result = func_result if not func_exception else self.default_return
                 self.run_on_end_func(
@@ -69,7 +99,7 @@ class CallPyBack:
         if inspect.iscoroutinefunction(self.on_call):
             asyncio.run(func(**func_kwargs))
         else:
-            func(func_kwargs)
+            func(**func_kwargs)
 
     def run_on_call_func(self, func_args, func_kwargs):
         on_call_kwargs = self.get_on_call_kwargs(func_args, func_kwargs)
@@ -106,14 +136,6 @@ class CallPyBack:
             func_scope_vars[var_name] = self.local_vars.get(var_name, "<not-found>")
         self.local_vars = {}
         return func_scope_vars
-
-    def is_on_end_func_defined(self):
-        # check if on_end handling function is defined
-        return (
-            isinstance(self.on_end, type(DEFAULT_ON_END_LAMBDA))
-            and self.on_end.__name__ == DEFAULT_ON_END_LAMBDA.__name__
-            and self.on_end == DEFAULT_ON_END_LAMBDA
-        )
 
     ############### CONSTRUCTING KWARGS FOR CALLBACKS ###############
     # to allow omitting parameters in user created callbacks
