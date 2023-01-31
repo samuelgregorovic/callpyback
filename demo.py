@@ -1,11 +1,6 @@
-from classes import CallPyBack
 import time
 
-
-def background_callpyback(func):
-    func.background_callpyback = True
-
-    return func
+from callpyback.callpyback import CallPyBack, background_callpyback
 
 
 # sample callback method
@@ -29,6 +24,7 @@ def on_failure(func_exception, func_args, func_kwargs):
 
 @background_callpyback
 def on_end(func_result, func_exception, func_args, func_kwargs, func_scope_vars):
+    print(func_scope_vars)
     time.sleep(1)
     print("end finished")
 
@@ -44,6 +40,7 @@ custom_callback = CallPyBack(
     on_end=on_end,
     default_return=-1,
     pass_vars={"id"},
+    exception_classes=(KeyError,),
 )
 
 
@@ -55,9 +52,12 @@ class Treatment:
 def django_save(model):
     print("running function")
     id = 2
+    # raise KeyError("x")
     print("function done")
     return id
 
 
 id = django_save(model=Treatment)
-print("after func execution")
+
+
+print(f"after func execution {id}")
