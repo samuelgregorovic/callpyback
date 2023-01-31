@@ -1,10 +1,7 @@
 import sys
 import inspect
-import asyncio
+import threading
 
-import nest_asyncio
-
-nest_asyncio.apply()
 # default callback functions
 DEFAULT_ON_CALL_LAMBDA = lambda *a, **k: None
 DEFAULT_ON_SUCCESS_LAMBDA = lambda *a, **k: None
@@ -99,39 +96,13 @@ class CallPyBack:
                 )
                 return result
 
-        async def async_wrapper(*func_args, **func_kwargs):
-            # callback and func flow
-            sys.setprofile(tracer)
-            func_exception, func_result, func_scope_vars = None, None, []
-            try:
-                self.run_on_call_func(func_args, func_kwargs)
-                func_result = await func(*func_args, **func_kwargs)
-                func_scope_vars = self.get_func_scope_vars()
-                self.run_success_func(func_result, func_args, func_kwargs)
-                return func_result
-            except Exception as ex:
-                func_exception = ex
-                func_scope_vars = self.get_func_scope_vars()
-                self.run_failure_func(func_exception, func_args, func_kwargs)
-                return self.default_return
-            finally:
-                sys.setprofile(None)
-                if self.on_end == DEFAULT_ON_END_LAMBDA and func_exception:
-                    raise func_exception
-                result = func_result if not func_exception else self.default_return
-                self.run_on_end_func(
-                    result, func_exception, func_args, func_kwargs, func_scope_vars
-                )
-                return result
-
-        return async_wrapper if inspect.iscoroutinefunction(func) else wrapper
+        return wrapper
 
     ############### CALLING CALLBACKS ###############
-
     def run_callback_func(self, func, func_kwargs):
-        # generalised call to given callback func
-        if inspect.iscoroutinefunction(func):
-            asyncio.run(func(**func_kwargs))
+        if hasattr(func, "background_callpyback"):
+            t = threading.Thread(target=func, args=(), kwargs=func_kwargs, daemon=False)
+            t.start()
         else:
             func(**func_kwargs)
 

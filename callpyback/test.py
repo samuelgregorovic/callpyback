@@ -1,38 +1,36 @@
 from classes import CallPyBack
+import time
 
 
-# sample callback methods
-async def on_call(func_args, func_kwargs):
-    print("----------------------")
-    print(f"status: START")
-    print(f"args: {func_args}")
-    print(f"kwargs: {func_kwargs}")
+def background_callpyback(func):
+    func.background_callpyback = True
+
+    return func
 
 
-async def on_success(func_result, func_args, func_kwargs):
-    print("----------------------")
-    print(f"status: SUCCESS")
-    print(f"result: {func_result}")
-    print(f"args: {func_args}")
-    print(f"kwargs: {func_kwargs}")
+# sample callback method
+@background_callpyback
+def on_call(func_args, func_kwargs):
+    time.sleep(1)
+    print("call finished")
 
 
-async def on_failure(func_exception, func_args, func_kwargs):
-    print("----------------------")
-    print(f"status: FAIL")
-    print(f"exception: {func_exception}")
-    print(f"args: {func_args}")
-    print(f"kwargs: {func_kwargs}")
+@background_callpyback
+def on_success(func_result, func_args, func_kwargs):
+    time.sleep(1)
+    print("success finished")
 
 
-async def on_end(func_result, func_exception, func_args, func_kwargs, func_scope_vars):
-    print("----------------------")
-    print(f"status: DONE")
-    print(f"result: {func_result}")
-    print(f"exception: {func_exception}")
-    print(f"args: {func_args}")
-    print(f"kwargs: {func_kwargs}")
-    print(f"func_scope_vars: {func_scope_vars}")
+@background_callpyback
+def on_failure(func_exception, func_args, func_kwargs):
+    time.sleep(1)
+    print("failure finished")
+
+
+@background_callpyback
+def on_end(func_result, func_exception, func_args, func_kwargs, func_scope_vars):
+    time.sleep(1)
+    print("end finished")
 
 
 # custom class instance test
@@ -49,31 +47,17 @@ custom_callback = CallPyBack(
 )
 
 
-@custom_callback
-# async def django_save(model):
-#     print("test custom cls")
-#     id = 2
-#     #    raise Exception("exsss")
-#     return id
-
-
-@custom_callback
-def django_save(model):
-    print("test custom cls")
-    id = 2
-    #    raise Exception("exsss")
-    return id
-
-
 class Treatment:
     pass
 
 
-import asyncio
+@custom_callback
+def django_save(model):
+    print("running function")
+    id = 2
+    print("function done")
+    return id
 
-# result = asyncio.run(django_save(model=Treatment()))
-result = django_save(model=Treatment())
 
-
-print(f"----------------------")
-print(f"Return value: {result}")
+id = django_save(model=Treatment)
+print("after func execution")
