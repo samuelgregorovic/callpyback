@@ -1,5 +1,5 @@
 # callpyback
-
+[![Python Versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue.svg)](https://python.org)
 [![Build Status](https://app.travis-ci.com/samuelgregorovic/callpyback.svg?branch=main)](https://app.travis-ci.com/samuelgregorovic/callpyback)
 [![Coverage Status](https://coveralls.io/repos/github/samuelgregorovic/callpyback/badge.svg)](https://coveralls.io/github/samuelgregorovic/callpyback)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -7,6 +7,8 @@
 [![PyPI version](https://badge.fury.io/py/callpyback.svg)](https://badge.fury.io/py/callpyback)
 [![Known Vulnerabilities](https://snyk.io/test/github/samuelgregorovic/callpyback/badge.svg)](https://snyk.io/test/github/samuelgregorovic/callpyback)
 [![Maintainability](https://api.codeclimate.com/v1/badges/6473b57bc8600e5ad6f6/maintainability)](https://codeclimate.com/github/samuelgregorovic/callpyback/maintainability)
+![Repo Size](https://img.shields.io/github/repo-size/samuelgregorovic/callpyback)
+[![Downloads](https://static.pepy.tech/badge/callpyback)](https://pepy.tech/project/callpyback)
 ## Features
 
 - on_call callback
