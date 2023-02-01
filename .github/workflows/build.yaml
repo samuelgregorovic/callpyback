@@ -32,5 +32,5 @@ jobs:
           pytest tests/ --cov=callpyback/
       - name: Generate coverage with coveralls
         run: |
-          COVERALLS_REPO_TOKEN={{ secrets.COVERALLS_REPO_TOKEN }} coveralls
+          COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
         
