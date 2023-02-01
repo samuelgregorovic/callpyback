@@ -2,6 +2,8 @@
 
 [![Build Status](https://app.travis-ci.com/samuelgregorovic/callpyback.svg?branch=main)](https://app.travis-ci.com/samuelgregorovic/callpyback)
 [![Coverage Status](https://coveralls.io/repos/github/samuelgregorovic/callpyback/badge.svg)](https://coveralls.io/github/samuelgregorovic/callpyback)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ## Features
 
