@@ -386,7 +386,7 @@ class Test_main:
         callpyback_obj.run_on_failure_func = MagicMock()
         callpyback_obj.run_on_end_func = MagicMock()
         # Calls
-        result = callpyback_obj.main(func, args, kwargs)
+        _ = callpyback_obj.main(func, args, kwargs)
         # Assertions
         callpyback_obj.validate_arguments.assert_called_once()
         callpyback_obj.set_tracer_profile.assert_has_calls(
@@ -398,3 +398,210 @@ class Test_main:
         callpyback_obj.run_on_success_func.assert_not_called()
         callpyback_obj.run_on_failure_func.assert_called_once()
         callpyback_obj.run_on_end_func.assert_called_once()
+
+
+class Test_set_tracer_profile:
+    """Test set_tracer_profile method"""
+
+    def test_default_tracer(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj()
+        # Calls
+        callpyback_obj.set_tracer_profile(None)
+        # Assertions
+        assert True
+
+
+class Test_tracer:
+    """Test tracer method"""
+
+    def test_return_event(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj()
+
+        class DummyFrame:
+            def __init__(self, f_locals):
+                self.f_locals = f_locals
+
+        frame = DummyFrame({"x": "y"})
+        assert callpyback_obj.local_vars == {}
+        # Calls
+        callpyback_obj.tracer(frame, "return", None)
+        # Assertions
+        assert callpyback_obj.local_vars == {"x": "y"}
+
+    def test_other_event(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj()
+
+        class DummyFrame:
+            def __init__(self, f_locals):
+                self.f_locals = f_locals
+
+        frame = DummyFrame({"x": "y"})
+        assert callpyback_obj.local_vars == {}
+        # Calls
+        callpyback_obj.tracer(frame, "yield", None)
+        # Assertions
+        assert callpyback_obj.local_vars == {}
+
+
+class Test_run_callback_func:
+    """Test run_callback_func method"""
+
+    def test_blocking_callback(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj()
+        func = MagicMock()
+        func_kwargs = {"var": "value"}
+        # Calls
+        callpyback_obj.run_callback_func(func, func_kwargs)
+        # Assertions
+        func.assert_called_once_with(**func_kwargs)
+
+    def test_background_callback(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj()
+        mock = MagicMock()
+        func_kwargs = {"var": "value"}
+
+        @background_callpyback
+        def func(*_, **__):
+            mock()
+
+        # Calls
+        assert hasattr(func, "__background_callpyback__")
+        callpyback_obj.run_callback_func(func, func_kwargs)
+        # Assertions
+        mock.assert_called_once()
+
+
+class Test_run_on_call_func:
+    """Test run_on_call_func method"""
+
+    def test_basic(self):
+        """_summary_"""
+        # Mocks
+        on_call = MagicMock()
+        callpyback_obj = create_callpyback_obj(on_call=on_call)
+        func_args = (1, 2, 3)
+        func_kwargs = {"var": "value"}
+        callpyback_obj.get_on_call_kwargs = MagicMock(return_value={"var1": "value1"})
+        callpyback_obj.run_callback_func = MagicMock()
+        # Calls
+        callpyback_obj.run_on_call_func(func_args, func_kwargs)
+        # Assertions
+        callpyback_obj.get_on_call_kwargs.assert_called_once_with(
+            func_args, func_kwargs
+        )
+        callpyback_obj.run_callback_func.assert_called_once_with(
+            on_call, {"var1": "value1"}
+        )
+
+
+class Test_run_on_success_func:
+    """Test run_on_success method"""
+
+    def test_basic(self):
+        """_summary_"""
+        # Mocks
+        on_success = MagicMock()
+        callpyback_obj = create_callpyback_obj(on_success=on_success)
+        func_args = (1, 2, 3)
+        func_kwargs = {"var": "value"}
+        func_result = -1
+        callpyback_obj.get_on_success_kwargs = MagicMock(
+            return_value={"var1": "value1"}
+        )
+        callpyback_obj.run_callback_func = MagicMock()
+        # Calls
+        callpyback_obj.run_on_success_func(func_result, func_args, func_kwargs)
+        # Assertions
+        callpyback_obj.get_on_success_kwargs.assert_called_once_with(
+            func_result, func_args, func_kwargs
+        )
+        callpyback_obj.run_callback_func.assert_called_once_with(
+            on_success, {"var1": "value1"}
+        )
+
+
+class Test_run_on_failure_func:
+    """Test run_on_failure method"""
+
+    def test_basic(self):
+        """_summary_"""
+        # Mocks
+        on_failure = MagicMock()
+        callpyback_obj = create_callpyback_obj(on_failure=on_failure)
+        func_args = (1, 2, 3)
+        func_kwargs = {"var": "value"}
+        func_exception = Exception("some error")
+        callpyback_obj.get_on_failure_kwargs = MagicMock(
+            return_value={"var1": "value1"}
+        )
+        callpyback_obj.run_callback_func = MagicMock()
+        # Calls
+        callpyback_obj.run_on_failure_func(func_exception, func_args, func_kwargs)
+        # Assertions
+        callpyback_obj.get_on_failure_kwargs.assert_called_once_with(
+            func_exception, func_args, func_kwargs
+        )
+        callpyback_obj.run_callback_func.assert_called_once_with(
+            on_failure, {"var1": "value1"}
+        )
+
+
+class Test_run_on_end_func:
+    """Test run_on_end method"""
+
+    def test_basic(self):
+        """_summary_"""
+        # Mocks
+        on_end = MagicMock()
+        callpyback_obj = create_callpyback_obj(on_end=on_end)
+        func_args = (1, 2, 3)
+        func_kwargs = {"var": "value"}
+        func_result = -1
+        func_scope_vars = {"var1": "value1"}
+        func_exception = Exception("some error")
+        callpyback_obj.get_on_end_kwargs = MagicMock(return_value={"var1": "value1"})
+        callpyback_obj.run_callback_func = MagicMock()
+        # Calls
+        callpyback_obj.run_on_end_func(
+            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+        )
+        # Assertions
+        callpyback_obj.get_on_end_kwargs.assert_called_once_with(
+            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+        )
+        callpyback_obj.run_callback_func.assert_called_once_with(
+            on_end, {"var1": "value1"}
+        )
+
+
+class Test_get_func_scope_vars:
+    """Test get_func_scope_vars method"""
+
+    def test_undefined_pass_vars(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj()
+        # Calls
+        func_scope_vars = callpyback_obj.get_func_scope_vars()
+        # Assertions
+        assert func_scope_vars == []
+
+    def test_defined_pass_vars(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj(pass_vars=("var1", "var2"))
+        callpyback_obj.local_vars = {"var1": "value1", "var3": "value3"}
+        # Calls
+        func_scope_vars = callpyback_obj.get_func_scope_vars()
+        # Assertions
+        assert func_scope_vars == {"var1": "value1", "var2": "<not-found>"}
