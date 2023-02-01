@@ -11,7 +11,7 @@
 - support for async/sync callbacks with auto-detect
 - support for omitting callback functions parameters with auto-detect
 - pre-defining custom callback with creating class instance and using it as decorator
-
+- TBD
 
 ### Instalation
 `pip install callpyback`
