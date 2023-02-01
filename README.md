@@ -9,6 +9,9 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/6473b57bc8600e5ad6f6/maintainability)](https://codeclimate.com/github/samuelgregorovic/callpyback/maintainability)
 ![Repo Size](https://img.shields.io/github/repo-size/samuelgregorovic/callpyback)
 [![Downloads](https://static.pepy.tech/badge/callpyback)](https://pepy.tech/project/callpyback)
+[![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/samuelgregorovic/callpyback)](https://github.com/samuelgregorovic/callpyback/pulse)
+
 ## Features
 
 - on_call callback
