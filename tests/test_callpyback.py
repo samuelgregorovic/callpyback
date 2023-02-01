@@ -299,10 +299,11 @@ class Test___call__:
         args = ()
         kwargs = {}
         # Calls
-        result = callpyback_obj.__call__(func, *args, **kwargs)
+        result = callpyback_obj.__call__(func, *args, **kwargs)()
         # Assertions
         assert result
         assert callable(result)
+        callpyback_obj.main.assert_called_once_with(func, args, kwargs)
 
 
 class Test_main:
@@ -605,3 +606,166 @@ class Test_get_func_scope_vars:
         func_scope_vars = callpyback_obj.get_func_scope_vars()
         # Assertions
         assert func_scope_vars == {"var1": "value1", "var2": "<not-found>"}
+
+
+class Test_get_on_call_kwargs:
+    """Test get_on_call_kwargs method"""
+
+    def test_no_kwargs(self):
+        """_summary_"""
+        # Mocks
+        def on_call():
+            pass
+
+        func_args = (1, 2)
+        func_kwargs = {"var1": "key1"}
+        callpyback_obj = create_callpyback_obj(on_call=on_call)
+        # Calls
+        on_call_kwargs = callpyback_obj.get_on_call_kwargs(func_args, func_kwargs)
+        # Assertions
+        assert on_call_kwargs == {}
+
+    def test_all_kwargs(self):
+        """_summary_"""
+        # Mocks
+        def on_call(func_args, func_kwargs):
+            pass
+
+        func_args = (1, 2)
+        func_kwargs = {"var1": "key1"}
+        callpyback_obj = create_callpyback_obj(on_call=on_call)
+        # Calls
+        on_call_kwargs = callpyback_obj.get_on_call_kwargs(func_args, func_kwargs)
+        # Assertions
+        assert on_call_kwargs == {"func_args": func_args, "func_kwargs": func_kwargs}
+
+
+class Test_get_on_success_kwargs:
+    """Test get_on_success_kwargs method"""
+
+    def test_no_kwargs(self):
+        """_summary_"""
+        # Mocks
+        def on_success():
+            pass
+
+        func_args = (1, 2)
+        func_kwargs = {"var1": "key1"}
+        callpyback_obj = create_callpyback_obj(on_success=on_success)
+        # Calls
+        on_success_kwargs = callpyback_obj.get_on_call_kwargs(func_args, func_kwargs)
+        # Assertions
+        assert on_success_kwargs == {}
+
+    def test_all_kwargs(self):
+        """_summary_"""
+        # Mocks
+        def on_success(func_result, func_args, func_kwargs):
+            pass
+
+        func_result = -1
+        func_args = (1, 2)
+        func_kwargs = {"var1": "key1"}
+        callpyback_obj = create_callpyback_obj(on_success=on_success)
+        # Calls
+        on_success_kwargs = callpyback_obj.get_on_success_kwargs(
+            func_result, func_args, func_kwargs
+        )
+        # Assertions
+        assert on_success_kwargs == {
+            "func_result": -1,
+            "func_args": func_args,
+            "func_kwargs": func_kwargs,
+        }
+
+
+class Test_get_on_failure_kwargs:
+    """Test get_on_failure_kwargs method"""
+
+    def test_no_kwargs(self):
+        """_summary_"""
+        # Mocks
+        def on_failure():
+            pass
+
+        func_exception = Exception("some error")
+        func_args = (1, 2)
+        func_kwargs = {"var1": "key1"}
+        callpyback_obj = create_callpyback_obj(on_failure=on_failure)
+        # Calls
+        on_failure_kwargs = callpyback_obj.get_on_failure_kwargs(
+            func_exception, func_args, func_kwargs
+        )
+        # Assertions
+        assert on_failure_kwargs == {}
+
+    def test_all_kwargs(self):
+        """_summary_"""
+        # Mocks
+        def on_failure(func_exception, func_args, func_kwargs):
+            pass
+
+        func_exception = Exception("some error")
+        func_args = (1, 2)
+        func_kwargs = {"var1": "key1"}
+        callpyback_obj = create_callpyback_obj(on_failure=on_failure)
+        # Calls
+        on_failure_kwargs = callpyback_obj.get_on_failure_kwargs(
+            func_exception, func_args, func_kwargs
+        )
+        # Assertions
+        assert on_failure_kwargs == {
+            "func_exception": func_exception,
+            "func_args": func_args,
+            "func_kwargs": func_kwargs,
+        }
+
+
+class Test_get_on_end_kwargs:
+    """Test get_on_end_kwargs method"""
+
+    def test_no_kwargs(self):
+        """_summary_"""
+        # Mocks
+        def on_end():
+            pass
+
+        func_result = -1
+        func_exception = Exception("some error")
+        func_args = (1, 2)
+        func_kwargs = {"var1": "key1"}
+        func_scope_vars = {"var2": "value2"}
+        callpyback_obj = create_callpyback_obj(on_end=on_end)
+        # Calls
+        on_end_kwargs = callpyback_obj.get_on_end_kwargs(
+            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+        )
+        # Assertions
+        assert on_end_kwargs == {}
+
+    def test_all_kwargs(self):
+        """_summary_"""
+        # Mocks
+        def on_end(
+            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+        ):
+            pass
+
+        func_result = -1
+        func_exception = Exception("some error")
+        func_args = (1, 2)
+        func_kwargs = {"var1": "key1"}
+        func_scope_vars = {"var2": "value2"}
+        callpyback_obj = create_callpyback_obj(on_end=on_end)
+        # Calls
+        on_end_kwargs = callpyback_obj.get_on_end_kwargs(
+            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+        )
+        # Assertions
+        assert on_end_kwargs == {
+            "func_result": func_result,
+            "func_exception": func_exception,
+            "func_args": func_args,
+            "func_kwargs": func_kwargs,
+            "func_scope_vars": func_scope_vars,
+        }
