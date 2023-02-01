@@ -42,6 +42,10 @@ class CallPyBack:
             Validates `exception_classes` constructor argument.
         __call__(func):
             Invoked on decorator instance call.
+        main(func, *args, **kwargs):
+            Contains the actual callback logic.
+        set_tracer_profile(tracer):
+            Sets custom tracer profile.
         tracer(frame, event, _):
             Represents tracer for storing local variables from last executed function.
         run_callback_func(func, func_kwargs):
@@ -195,6 +199,8 @@ class CallPyBack:
                 "Parameter `exception_classes` must be `list`, `tuple` or `set`."
             )
         for exception_class in self.exception_classes:
+            if not inspect.isclass(exception_class):
+                raise TypeError("Element of `exception_classes` must be a class.")
             if not issubclass(exception_class, Exception):
                 raise TypeError(
                     "Element of `exception_classes` must be a subclass of `Exception`."
@@ -217,60 +223,77 @@ class CallPyBack:
             N/A
         """
 
-        def wrapper(*func_args, **func_kwargs):
+        def _wrapper(*func_args, **func_kwargs):
             """Decorator class wrapper accepting `args` and `kwargs` for the decorated function.
-            Contains callback and execution logic.
+            Calling main method containing callback logic."""
+            return self.main(func, func_args, func_kwargs)
 
-            Process:
-                1. Validation of decorator arguments.
-                2. Setting up custom tracer.
-                3. Executing `on_call` callback (if defined).
-                4. Executing decorated function.
-                5. On success:
-                    6a. Extracting decorated function local variables.
-                    7a. Executing `on_success` callback (if defined).
-                    8a. Returning decorated function result
-                5. On error (catching exception from `exception_classes`):
-                    6b. Extracting decorated function local variables.
-                    7b. Executing `on_failure` callback (if defined).
-                    8b. Returning `default_return` value
-                9. Reverting to default tracer.
-                10. Re-raising decorated function exception if `on_end` callback is not defined.
-                11. Executing `on_end` callback (if defined).
+        return _wrapper
 
-            Args:
-                func_args(tuple): Arguments for the decorated function.
-                kwargs(dict): Keyword arguments for the decorated function.
-            Returns:
-                Any: Decorated function result or `default_return` value.
-            Raises:
-                func_exception: Raised if error occurs during function execution, only if `on_end`
-                    handler is not defined.
-            """
-            self.validate_arguments()
-            sys.setprofile(self.tracer)
-            func_exception, func_result, func_scope_vars = None, None, []
-            try:
-                self.run_on_call_func(func_args, func_kwargs)
-                func_result = func(*func_args, **func_kwargs)
-                func_scope_vars = self.get_func_scope_vars()
-                self.run_on_success_func(func_result, func_args, func_kwargs)
-                return func_result
-            except self.exception_classes as ex:
-                func_exception = ex
-                func_scope_vars = self.get_func_scope_vars()
-                self.run_on_failure_func(func_exception, func_args, func_kwargs)
-                return self.default_return
-            finally:
-                sys.setprofile(None)
-                if self.on_end is _default_callback and func_exception:
-                    raise func_exception
-                result = func_result if not func_exception else self.default_return
-                self.run_on_end_func(
-                    result, func_exception, func_args, func_kwargs, func_scope_vars
-                )
+    def main(self, func, func_args, func_kwargs):
+        """Contains callback and execution logic.
 
-        return wrapper
+        Process:
+            1. Validation of decorator arguments.
+            2. Setting up custom tracer.
+            3. Executing `on_call` callback (if defined).
+            4. Executing decorated function.
+            5. On success:
+                6a. Extracting decorated function local variables.
+                7a. Executing `on_success` callback (if defined).
+                8a. Returning decorated function result
+            5. On error (catching exception from `exception_classes`):
+                6b. Extracting decorated function local variables.
+                7b. Executing `on_failure` callback (if defined).
+                8b. Returning `default_return` value
+            9. Reverting to default tracer.
+            10. Re-raising decorated function exception if `on_end` callback is not defined.
+            11. Executing `on_end` callback (if defined).
+
+        Args:
+            func(Callable): Decorated function to be executed amongst callbacks.
+            func_args(tuple): Arguments for the decorated function.
+            kwargs(dict): Keyword arguments for the decorated function.
+        Returns:
+            Any: Decorated function result or `default_return` value.
+        Raises:
+            func_exception: Raised if error occurs during function execution, only if `on_end`
+                handler is not defined.
+        """
+        self.validate_arguments()
+        self.set_tracer_profile(self.tracer)
+        func_exception, func_result, func_scope_vars = None, None, []
+        try:
+            self.run_on_call_func(func_args, func_kwargs)
+            func_result = func(*func_args, **func_kwargs)
+            func_scope_vars = self.get_func_scope_vars()
+            self.run_on_success_func(func_result, func_args, func_kwargs)
+            return func_result
+        except self.exception_classes as ex:
+            func_exception = ex
+            func_scope_vars = self.get_func_scope_vars()
+            self.run_on_failure_func(func_exception, func_args, func_kwargs)
+            return self.default_return
+        finally:
+            self.set_tracer_profile(None)
+            if self.on_end is _default_callback and func_exception:
+                raise func_exception
+            result = func_result if not func_exception else self.default_return
+            self.run_on_end_func(
+                result, func_exception, func_args, func_kwargs, func_scope_vars
+            )
+
+    def set_tracer_profile(self, tracer):
+        """Sets custom tracer to the sys profile.
+
+        Args:
+            tracer (Tracer): Tracer to be set.
+        Returns:
+            None
+        Raises:
+            N/A
+        """
+        sys.setprofile(tracer)
 
     def tracer(self, frame, event, _):
         """Represents tracer for storing local variables from last executed function.

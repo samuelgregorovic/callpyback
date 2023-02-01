@@ -1,7 +1,7 @@
 """Module containing tests for CallPyBack implementation
 """
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 from callpyback.callpyback import CallPyBack, background_callpyback, _default_callback
 
@@ -199,6 +199,15 @@ class Test_validate_pass_vars:
         # Assertions
         assert True
 
+    def test_empty(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj()
+        # Calls
+        callpyback_obj.validate_pass_vars()
+        # Assertions
+        assert True
+
     def test_on_end_not_specified_error(self):
         """_summary_"""
         # Mocks
@@ -233,3 +242,159 @@ class Test_validate_pass_vars:
             TypeError, match="Variable in `pass_vars` must be of type `str`."
         ):
             callpyback_obj.validate_pass_vars()
+
+
+class Test_validate_exception_classes:
+    """Class containing tests for validate_exception_classes method"""
+
+    def test_list_type_error(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj(exception_classes="not_a_list")
+        # Calls
+        # Assertions
+        with pytest.raises(
+            TypeError,
+            match="Parameter `exception_classes` must be `list`, `tuple` or `set`.",
+        ):
+            callpyback_obj.validate_exception_classes()
+
+    def test_not_a_class_error(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj(exception_classes=("some_string",))
+        # Calls
+        # Assertions
+        with pytest.raises(
+            TypeError,
+            match="Element of `exception_classes` must be a class.",
+        ):
+            callpyback_obj.validate_exception_classes()
+
+    def test_exception_type_error(self):
+        """_summary_"""
+        # Mocks
+        class DummyClass:
+            pass
+
+        callpyback_obj = create_callpyback_obj(exception_classes=(DummyClass,))
+        # Calls
+        # Assertions
+        with pytest.raises(
+            TypeError,
+            match="Element of `exception_classes` must be a subclass of `Exception`.",
+        ):
+            callpyback_obj.validate_exception_classes()
+
+
+class Test___call__:
+    """Class containing tests for __call__ method"""
+
+    def test_basic(self):
+        """_summary_"""
+        # Mocks
+        callpyback_obj = create_callpyback_obj()
+        callpyback_obj.main = MagicMock()
+        func = MagicMock()
+        args = ()
+        kwargs = {}
+        # Calls
+        result = callpyback_obj.__call__(func, *args, **kwargs)
+        # Assertions
+        assert result
+        assert callable(result)
+
+
+class Test_main:
+    """Class containing tests for main method"""
+
+    def test_success(self):
+        """_summary_"""
+        # Mocks
+        func = MagicMock(return_value="func_return")
+        args = (1, 2, 3)
+        kwargs = {"var": "value"}
+        callpyback_obj = create_callpyback_obj()
+        callpyback_obj.tracer = MagicMock()
+        callpyback_obj.validate_arguments = MagicMock()
+        callpyback_obj.set_tracer_profile = MagicMock()
+        callpyback_obj.run_on_call_func = MagicMock()
+        callpyback_obj.get_func_scope_vars = MagicMock(return_value=[])
+        callpyback_obj.run_on_success_func = MagicMock()
+        callpyback_obj.run_on_failure_func = MagicMock()
+        callpyback_obj.run_on_end_func = MagicMock()
+        # Calls
+        result = callpyback_obj.main(func, args, kwargs)
+        # Assertions
+        assert result == "func_return"
+        callpyback_obj.validate_arguments.assert_called_once()
+        callpyback_obj.set_tracer_profile.assert_has_calls(
+            [call(callpyback_obj.tracer), call(None)]
+        )
+        callpyback_obj.run_on_call_func.assert_called_with(args, kwargs)
+        func.assert_called_once_with(*args, **kwargs)
+        callpyback_obj.get_func_scope_vars.assert_called_once()
+        callpyback_obj.run_on_success_func.assert_called_once_with(result, args, kwargs)
+        callpyback_obj.run_on_failure_func.assert_not_called()
+        callpyback_obj.run_on_end_func.assert_called_once_with(
+            result, None, args, kwargs, []
+        )
+
+    def test_failure_unhandled_ex(self):
+        """_summary_"""
+        # Mocks
+        func = MagicMock(side_effect=Exception("some error"))
+        args = (1, 2, 3)
+        kwargs = {"var": "value"}
+        callpyback_obj = create_callpyback_obj(on_end=_default_callback)
+        callpyback_obj.tracer = MagicMock()
+        callpyback_obj.validate_arguments = MagicMock()
+        callpyback_obj.set_tracer_profile = MagicMock()
+        callpyback_obj.run_on_call_func = MagicMock()
+        callpyback_obj.get_func_scope_vars = MagicMock(return_value=[])
+        callpyback_obj.run_on_success_func = MagicMock()
+        callpyback_obj.run_on_failure_func = MagicMock()
+        callpyback_obj.run_on_end_func = MagicMock()
+        # Calls
+        with pytest.raises(Exception, match="some error"):
+            _ = callpyback_obj.main(func, args, kwargs)
+        # Assertions
+        callpyback_obj.validate_arguments.assert_called_once()
+        callpyback_obj.set_tracer_profile.assert_has_calls(
+            [call(callpyback_obj.tracer), call(None)]
+        )
+        callpyback_obj.run_on_call_func.assert_called_with(args, kwargs)
+        func.assert_called_once_with(*args, **kwargs)
+        callpyback_obj.get_func_scope_vars.assert_called_once()
+        callpyback_obj.run_on_success_func.assert_not_called()
+        callpyback_obj.run_on_failure_func.assert_called_once()
+        callpyback_obj.run_on_end_func.assert_not_called()
+
+    def test_failure_handled_ex(self):
+        """_summary_"""
+        # Mocks
+        func = MagicMock(side_effect=Exception("some error"))
+        args = (1, 2, 3)
+        kwargs = {"var": "value"}
+        callpyback_obj = create_callpyback_obj()
+        callpyback_obj.tracer = MagicMock()
+        callpyback_obj.validate_arguments = MagicMock()
+        callpyback_obj.set_tracer_profile = MagicMock()
+        callpyback_obj.run_on_call_func = MagicMock()
+        callpyback_obj.get_func_scope_vars = MagicMock(return_value=[])
+        callpyback_obj.run_on_success_func = MagicMock()
+        callpyback_obj.run_on_failure_func = MagicMock()
+        callpyback_obj.run_on_end_func = MagicMock()
+        # Calls
+        result = callpyback_obj.main(func, args, kwargs)
+        # Assertions
+        callpyback_obj.validate_arguments.assert_called_once()
+        callpyback_obj.set_tracer_profile.assert_has_calls(
+            [call(callpyback_obj.tracer), call(None)]
+        )
+        callpyback_obj.run_on_call_func.assert_called_with(args, kwargs)
+        func.assert_called_once_with(*args, **kwargs)
+        callpyback_obj.get_func_scope_vars.assert_called_once()
+        callpyback_obj.run_on_success_func.assert_not_called()
+        callpyback_obj.run_on_failure_func.assert_called_once()
+        callpyback_obj.run_on_end_func.assert_called_once()
