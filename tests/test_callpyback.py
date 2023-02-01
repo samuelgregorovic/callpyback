@@ -11,6 +11,7 @@ class Test_background_callback:
 
     def test_attribute_set(self):
         """Test whether the background_callback attribute is set to the function."""
+
         # Mocks
         @background_callpyback
         def function_x():
@@ -173,6 +174,7 @@ class Test_validate_callbacks:
 
     def test_coroutine_error(self):
         """Tests that error is raised when one of the callbacks is a coroutine."""
+
         # Mocks
         async def test_coroutine():
             pass
@@ -277,6 +279,7 @@ class Test_validate_exception_classes:
     def test_exception_type_error(self):
         """Tests that error is raised when one of the `exception_classes` elements
         is not a subclass of `Exception`."""
+
         # Mocks
         class DummyClass:
             pass
@@ -625,6 +628,7 @@ class Test_get_on_call_kwargs:
     def test_no_kwargs(self):
         """Tests that `get_on_call_kwargs` returns empty dict if no parameters are defined
         in the signature of `on_call` callback function."""
+
         # Mocks
         def on_call():
             pass
@@ -640,6 +644,7 @@ class Test_get_on_call_kwargs:
     def test_all_kwargs(self):
         """Tests that `get_on_call_kwargs` returns all parameters that are defined
         in the signature of `on_call` callback function."""
+
         # Mocks
         def on_call(func_args, func_kwargs):
             pass
@@ -659,6 +664,7 @@ class Test_get_on_success_kwargs:
     def test_no_kwargs(self):
         """Tests that `get_on_success_kwargs` returns empty dict if no parameters are defined
         in the signature of `on_success` callback function"""
+
         # Mocks
         def on_success():
             pass
@@ -677,6 +683,7 @@ class Test_get_on_success_kwargs:
     def test_all_kwargs(self):
         """Tests that `get_on_success_kwargs` returns all parameters that are defined
         in the signature of `on_success` callback function."""
+
         # Mocks
         def on_success(func_result, func_args, func_kwargs):
             pass
@@ -703,6 +710,7 @@ class Test_get_on_failure_kwargs:
     def test_no_kwargs(self):
         """Tests that `get_on_failure_kwargs` returns empty dict if no parameters are defined
         in the signature of `on_failure` callback function"""
+
         # Mocks
         def on_failure():
             pass
@@ -721,6 +729,7 @@ class Test_get_on_failure_kwargs:
     def test_all_kwargs(self):
         """Tests that `get_on_failure_kwargs` returns all parameters that are defined
         in the signature of `on_failure` callback function."""
+
         # Mocks
         def on_failure(func_exception, func_args, func_kwargs):
             pass
@@ -747,6 +756,7 @@ class Test_get_on_end_kwargs:
     def test_no_kwargs(self):
         """Tests that `get_on_end_kwargs` returns empty dict if no parameters are defined
         in the signature of `on_end` callback function"""
+
         # Mocks
         def on_end():
             pass
@@ -767,6 +777,7 @@ class Test_get_on_end_kwargs:
     def test_all_kwargs(self):
         """Tests that `get_on_end_kwargs` returns all parameters that are defined
         in the signature of `on_end` callback function."""
+
         # Mocks
         def on_end(
             func_result, func_exception, func_args, func_kwargs, func_scope_vars
