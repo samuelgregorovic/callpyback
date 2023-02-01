@@ -2,63 +2,23 @@
 
 ### Features
 
-- create callbacks for any functions
-	- on_success()
-	- on_fail(ex)
-	- on_end()
-- 3 ways to use:
-	- `callpyback()` decorator function
-	- `CallPyBack` decorator class
-	- predefined instance of `CallPyBack` class for more readable code
+- on_call callback
+- on_success callback
+- on_failure callback
+- on_end callback
+- default return
+- using local variables of function in on_end
+- support for async/sync callbacks with auto-detect
+- support for omitting callback functions parameters with auto-detect
+- pre-defining custom callback with creating class instance and using it as decorator
+
 
 ### Instalation
 `pip install callpyback`
 
 ### Usage
 
-#### 1. ```callpyback``` callback decorator
-
-##### Callback methods used in example
-```python
-def func_on_success():
-    print("success!")
-
-def func_on_fail(ex):
-    print(f"Failed with exception {ex}")
-
-def func_on_end():
-    print("ending...")
-```
-##### Case - normal execution without exception
-```python
-@callpyback(on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end)
-def method_ok():
-    print('method ok')
-
-method_ok()
-```
-will produce
-```python
->>>method ok
->>>success!
->>>ending...
-```
-##### Case - execution with exception
-```python
-@callpyback(on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end)
-def method_fail():
-    print('method before fail')
-	raise Exception('EpicFailure')
-
-method_ok()
-```
-will produce
-```python
->>>method before fail
->>>Failed with exception EpicFailure
->>>ending...
-```
-#### 2. ```CallPyBack``` callback class
+#### 1. ```CallPyBack``` callback class
 ```python
 @CallPyBack(on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end)
 def method()
@@ -68,7 +28,7 @@ method()
 ```
 Will produce the same results as `callpyback` decorator. Can be extended further.
 
-#### 3. Preconfigured ```CallPyBack``` callback custom class
+#### 2. Preconfigured ```CallPyBack``` callback custom class
 ```python
 custom_callpyback = CallPyBack(
     on_success=func_on_success, on_fail=func_on_fail, on_end=func_on_end
