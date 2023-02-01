@@ -144,7 +144,9 @@ class CallPyBack:
             if not callable(callback):
                 raise TypeError(f"Callback must be a callable not {type(callback)}.")
             if inspect.iscoroutinefunction(callback):
-                raise TypeError(f"Callback {callback.__name__} cannot be a coroutine.")
+                raise TypeError(
+                    f"Callback `{callback.__name__}` cannot be a coroutine."
+                )
 
     def validate_pass_vars(self):
         """Validates `pass_vars` constructor argument.

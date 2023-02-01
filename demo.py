@@ -4,9 +4,10 @@ from callpyback.callpyback import CallPyBack, background_callpyback
 
 
 # sample callback method
-@background_callpyback
+# @background_callpyback
 def on_call(func_args, func_kwargs):
     time.sleep(1)
+    raise KeyError("s")
     print("call finished")
 
 
