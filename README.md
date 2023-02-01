@@ -1,8 +1,9 @@
 # callpyback
-[![main](https://app.travis-ci.com/samuelgregorovic/callpyback.svg?branch=main)](https://app.travis-ci.com/samuelgregorovic/callpyback)
-[![develop](https://app.travis-ci.com/samuelgregorovic/callpyback.svg?branch=develop)](https://app.travis-ci.com/samuelgregorovic/callpyback)
 
-### Features
+[![Build Status](https://app.travis-ci.com/samuelgregorovic/callpyback.svg?branch=main)](https://app.travis-ci.com/samuelgregorovic/callpyback)
+[![Coverage Status](https://coveralls.io/repos/github/samuelgregorovic/callpyback/badge.svg)](https://coveralls.io/github/samuelgregorovic/callpyback)
+
+## Features
 
 - on_call callback
 - on_success callback
