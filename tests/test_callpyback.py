@@ -10,7 +10,7 @@ class Test_background_callback:
     """Class containing tests for background_callback function"""
 
     def test_attribute_set(self):
-        """_summary_"""
+        """Test whether the background_callback attribute is set to the function."""
         # Mocks
         @background_callpyback
         def function_x():
@@ -27,7 +27,7 @@ class Test__default_callback:
     """Class containing tests for __default_callback function"""
 
     def test_call(self):
-        """_summary_"""
+        """Test that _default_callback function executes without errors."""
         # Mocks
         args = (1, 2, 3)
         kwargs = {"var1": 1, "var2": 2}
@@ -41,17 +41,17 @@ class Test___init__:
     """Class containing tests for __init__ method"""
 
     def test_constructor_defaults(self):
-        """_summary_"""
+        """Tests that constructor sets default values correctly."""
         # Mocks
         # Calls
         decorator = CallPyBack()
         # Assertions
         assert decorator
         assert isinstance(decorator, CallPyBack)
-        assert decorator.on_call == _default_callback
-        assert decorator.on_success == _default_callback
-        assert decorator.on_failure == _default_callback
-        assert decorator.on_end == _default_callback
+        assert decorator.on_call is _default_callback
+        assert decorator.on_success is _default_callback
+        assert decorator.on_failure is _default_callback
+        assert decorator.on_end is _default_callback
         assert decorator.default_return is None
         assert decorator.pass_vars is None
         assert decorator.exception_classes == (Exception,)
@@ -64,7 +64,7 @@ class Test___init__:
         )
 
     def test_constructor_supplied_values(self):
-        """_summary_"""
+        """Tests that constructor sets supplied values correctly."""
         # Mocks
         on_call = MagicMock()
         on_success = MagicMock()
@@ -115,6 +115,7 @@ def create_callpyback_obj(
     pass_vars=None,
     exception_classes=(Exception,),
 ):
+    """Construct instance of CallPyBack object from supplied or default values."""
     instance = CallPyBack(
         on_call=on_call,
         on_success=on_success,
@@ -131,7 +132,7 @@ class Test_validate_arguments:
     """Class containing tests for validate_arguments method"""
 
     def test_basic(self):
-        """_summary_"""
+        """Tests that validate_arguments method calls validation methods."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
         callpyback_obj.validate_callbacks = MagicMock()
@@ -149,7 +150,7 @@ class Test_validate_callbacks:
     """Class containing tests for validate_callbacks method"""
 
     def test_correct(self):
-        """_summary_"""
+        """Tests that no errors are raised when callbacks are correct."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
         # Calls
@@ -158,7 +159,7 @@ class Test_validate_callbacks:
         assert True
 
     def test_not_callable_error(self):
-        """_summary_"""
+        """Tests that error is raised when one of the callbacks is not Callable."""
         # Mocks
         callpyback_obj = create_callpyback_obj(
             on_call="not_callable",
@@ -171,7 +172,7 @@ class Test_validate_callbacks:
             callpyback_obj.validate_callbacks()
 
     def test_coroutine_error(self):
-        """_summary_"""
+        """Tests that error is raised when one of the callbacks is a coroutine."""
         # Mocks
         async def test_coroutine():
             pass
@@ -191,7 +192,7 @@ class Test_validate_pass_vars:
     """Class containing tests for validate_pass_vars method"""
 
     def test_correct(self):
-        """_summary_"""
+        """Tests that no errors are raised when pass_vars are correct."""
         # Mocks
         callpyback_obj = create_callpyback_obj(pass_vars=("var1", "var2"))
         # Calls
@@ -200,7 +201,7 @@ class Test_validate_pass_vars:
         assert True
 
     def test_empty(self):
-        """_summary_"""
+        """Tests that no errors are raised when pass_vars is empty."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
         # Calls
@@ -209,7 +210,8 @@ class Test_validate_pass_vars:
         assert True
 
     def test_on_end_not_specified_error(self):
-        """_summary_"""
+        """Tests that error is raised when `on_end` is not specified,
+        while `pass_vars` are specified."""
         # Mocks
         callpyback_obj = create_callpyback_obj(
             on_end=_default_callback, pass_vars=("var1", "var2")
@@ -222,7 +224,7 @@ class Test_validate_pass_vars:
             callpyback_obj.validate_pass_vars()
 
     def test_bad_list_type_error(self):
-        """_summary_"""
+        """Tests that error is raised when `pass_vars` is not a list, tuple or set."""
         # Mocks
         callpyback_obj = create_callpyback_obj(pass_vars="bad_type")
         # Calls
@@ -233,7 +235,7 @@ class Test_validate_pass_vars:
             callpyback_obj.validate_pass_vars()
 
     def test_bad_variable_type_error(self):
-        """_summary_"""
+        """Tests that error is raised when one of `pass_vars` elements is not a string."""
         # Mocks
         callpyback_obj = create_callpyback_obj(pass_vars=("x", 1))
         # Calls
@@ -248,7 +250,7 @@ class Test_validate_exception_classes:
     """Class containing tests for validate_exception_classes method"""
 
     def test_list_type_error(self):
-        """_summary_"""
+        """Tests that error is raised when `exception_classes` is not a list, tuple or set."""
         # Mocks
         callpyback_obj = create_callpyback_obj(exception_classes="not_a_list")
         # Calls
@@ -260,7 +262,8 @@ class Test_validate_exception_classes:
             callpyback_obj.validate_exception_classes()
 
     def test_not_a_class_error(self):
-        """_summary_"""
+        """Tests that error is raised when one of the `exception_classes` elements
+        is not a class."""
         # Mocks
         callpyback_obj = create_callpyback_obj(exception_classes=("some_string",))
         # Calls
@@ -272,7 +275,8 @@ class Test_validate_exception_classes:
             callpyback_obj.validate_exception_classes()
 
     def test_exception_type_error(self):
-        """_summary_"""
+        """Tests that error is raised when one of the `exception_classes` elements
+        is not a subclass of `Exception`."""
         # Mocks
         class DummyClass:
             pass
@@ -291,7 +295,8 @@ class Test___call__:
     """Class containing tests for __call__ method"""
 
     def test_basic(self):
-        """_summary_"""
+        """Tests that no errors are raised when `__call__` method is called,
+        and that `main` method is executed."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
         callpyback_obj.main = MagicMock()
@@ -310,7 +315,8 @@ class Test_main:
     """Class containing tests for main method"""
 
     def test_success(self):
-        """_summary_"""
+        """Tests that `main` method is executed successfully, with correct
+        steps without raising any exceptions."""
         # Mocks
         func = MagicMock(return_value="func_return")
         args = (1, 2, 3)
@@ -342,7 +348,8 @@ class Test_main:
         )
 
     def test_failure_unhandled_ex(self):
-        """_summary_"""
+        """Tests that `main` method raises an exception when exception is
+        raised in decorated function when `on_end` callback is not specified."""
         # Mocks
         func = MagicMock(side_effect=Exception("some error"))
         args = (1, 2, 3)
@@ -372,7 +379,8 @@ class Test_main:
         callpyback_obj.run_on_end_func.assert_not_called()
 
     def test_failure_handled_ex(self):
-        """_summary_"""
+        """Tests that `main` method does not raise an exception when exception is
+        raised in decorated function when on_end callback is specified."""
         # Mocks
         func = MagicMock(side_effect=Exception("some error"))
         args = (1, 2, 3)
@@ -402,10 +410,10 @@ class Test_main:
 
 
 class Test_set_tracer_profile:
-    """Test set_tracer_profile method"""
+    """Test set_tracer_profile method."""
 
     def test_default_tracer(self):
-        """_summary_"""
+        """Tests that setting tracer profile executes successfully."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
         # Calls
@@ -418,7 +426,8 @@ class Test_tracer:
     """Test tracer method"""
 
     def test_return_event(self):
-        """_summary_"""
+        """Tests that local scope variables are extracted and saved to
+        the instance attribute when `return` event is triggered."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
 
@@ -434,7 +443,7 @@ class Test_tracer:
         assert callpyback_obj.local_vars == {"x": "y"}
 
     def test_other_event(self):
-        """_summary_"""
+        """Test that other events than `return` are ignored."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
 
@@ -454,7 +463,7 @@ class Test_run_callback_func:
     """Test run_callback_func method"""
 
     def test_blocking_callback(self):
-        """_summary_"""
+        """Tests that blocking callback executes successfully in a blocking way."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
         func = MagicMock()
@@ -465,7 +474,8 @@ class Test_run_callback_func:
         func.assert_called_once_with(**func_kwargs)
 
     def test_background_callback(self):
-        """_summary_"""
+        """Tests that background callback (marked by @background_callpyback decorator)
+        executes successfully on a new thread (in a background)."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
         mock = MagicMock()
@@ -486,7 +496,7 @@ class Test_run_on_call_func:
     """Test run_on_call_func method"""
 
     def test_basic(self):
-        """_summary_"""
+        """Tests that `on_call` callback function gets its kwargs generated and is called."""
         # Mocks
         on_call = MagicMock()
         callpyback_obj = create_callpyback_obj(on_call=on_call)
@@ -509,7 +519,7 @@ class Test_run_on_success_func:
     """Test run_on_success method"""
 
     def test_basic(self):
-        """_summary_"""
+        """Tests that `on_success` callback function gets its kwargs generated and is called."""
         # Mocks
         on_success = MagicMock()
         callpyback_obj = create_callpyback_obj(on_success=on_success)
@@ -535,7 +545,7 @@ class Test_run_on_failure_func:
     """Test run_on_failure method"""
 
     def test_basic(self):
-        """_summary_"""
+        """Tests that `on_failure` callback function gets its kwargs generated and is called."""
         # Mocks
         on_failure = MagicMock()
         callpyback_obj = create_callpyback_obj(on_failure=on_failure)
@@ -561,7 +571,7 @@ class Test_run_on_end_func:
     """Test run_on_end method"""
 
     def test_basic(self):
-        """_summary_"""
+        """Tests that `on_end` callback function gets its kwargs generated and is called."""
         # Mocks
         on_end = MagicMock()
         callpyback_obj = create_callpyback_obj(on_end=on_end)
@@ -589,16 +599,17 @@ class Test_get_func_scope_vars:
     """Test get_func_scope_vars method"""
 
     def test_undefined_pass_vars(self):
-        """_summary_"""
+        """Tests that `get_func_scope_vars` returns empty dict if `pass_vars` are not defined."""
         # Mocks
         callpyback_obj = create_callpyback_obj()
         # Calls
         func_scope_vars = callpyback_obj.get_func_scope_vars()
         # Assertions
-        assert func_scope_vars == []
+        assert func_scope_vars == {}
 
     def test_defined_pass_vars(self):
-        """_summary_"""
+        """Tests that `get_func_scope_vars` returns full dict if `pass_vars` are defined
+        and found in function scope variables."""
         # Mocks
         callpyback_obj = create_callpyback_obj(pass_vars=("var1", "var2"))
         callpyback_obj.local_vars = {"var1": "value1", "var3": "value3"}
@@ -612,7 +623,8 @@ class Test_get_on_call_kwargs:
     """Test get_on_call_kwargs method"""
 
     def test_no_kwargs(self):
-        """_summary_"""
+        """Tests that `get_on_call_kwargs` returns empty dict if no parameters are defined
+        in the signature of `on_call` callback function."""
         # Mocks
         def on_call():
             pass
@@ -626,7 +638,8 @@ class Test_get_on_call_kwargs:
         assert on_call_kwargs == {}
 
     def test_all_kwargs(self):
-        """_summary_"""
+        """Tests that `get_on_call_kwargs` returns all parameters that are defined
+        in the signature of `on_call` callback function."""
         # Mocks
         def on_call(func_args, func_kwargs):
             pass
@@ -644,21 +657,26 @@ class Test_get_on_success_kwargs:
     """Test get_on_success_kwargs method"""
 
     def test_no_kwargs(self):
-        """_summary_"""
+        """Tests that `get_on_success_kwargs` returns empty dict if no parameters are defined
+        in the signature of `on_success` callback function"""
         # Mocks
         def on_success():
             pass
 
+        func_result = -1
         func_args = (1, 2)
         func_kwargs = {"var1": "key1"}
         callpyback_obj = create_callpyback_obj(on_success=on_success)
         # Calls
-        on_success_kwargs = callpyback_obj.get_on_call_kwargs(func_args, func_kwargs)
+        on_success_kwargs = callpyback_obj.get_on_success_kwargs(
+            func_result, func_args, func_kwargs
+        )
         # Assertions
         assert on_success_kwargs == {}
 
     def test_all_kwargs(self):
-        """_summary_"""
+        """Tests that `get_on_success_kwargs` returns all parameters that are defined
+        in the signature of `on_success` callback function."""
         # Mocks
         def on_success(func_result, func_args, func_kwargs):
             pass
@@ -683,7 +701,8 @@ class Test_get_on_failure_kwargs:
     """Test get_on_failure_kwargs method"""
 
     def test_no_kwargs(self):
-        """_summary_"""
+        """Tests that `get_on_failure_kwargs` returns empty dict if no parameters are defined
+        in the signature of `on_failure` callback function"""
         # Mocks
         def on_failure():
             pass
@@ -700,7 +719,8 @@ class Test_get_on_failure_kwargs:
         assert on_failure_kwargs == {}
 
     def test_all_kwargs(self):
-        """_summary_"""
+        """Tests that `get_on_failure_kwargs` returns all parameters that are defined
+        in the signature of `on_failure` callback function."""
         # Mocks
         def on_failure(func_exception, func_args, func_kwargs):
             pass
@@ -725,7 +745,8 @@ class Test_get_on_end_kwargs:
     """Test get_on_end_kwargs method"""
 
     def test_no_kwargs(self):
-        """_summary_"""
+        """Tests that `get_on_end_kwargs` returns empty dict if no parameters are defined
+        in the signature of `on_end` callback function"""
         # Mocks
         def on_end():
             pass
@@ -744,7 +765,8 @@ class Test_get_on_end_kwargs:
         assert on_end_kwargs == {}
 
     def test_all_kwargs(self):
-        """_summary_"""
+        """Tests that `get_on_end_kwargs` returns all parameters that are defined
+        in the signature of `on_end` callback function."""
         # Mocks
         def on_end(
             func_result, func_exception, func_args, func_kwargs, func_scope_vars

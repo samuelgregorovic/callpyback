@@ -410,7 +410,7 @@ class CallPyBack:
         """
         func_scope_vars = {}
         if not self.pass_vars:
-            return []
+            return {}
         for var_name in self.pass_vars:
             func_scope_vars[var_name] = self.local_vars.get(var_name, "<not-found>")
         self.local_vars = {}
