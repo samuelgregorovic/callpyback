@@ -1,4 +1,5 @@
 # callpyback
+[![Build Status](https://app.travis-ci.com/samuelgregorovic/callpyback.svg?branch=main)](https://app.travis-ci.com/samuelgregorovic/callpyback)
 
 ### Features
 
