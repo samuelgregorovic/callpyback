@@ -102,7 +102,6 @@ In this case, `on_success` will be executed on the background thread, while `on_
 #### 4. Passing local variables of decorated function, specified in `pass_vars` to `on_end` callback
 ```python
 
-@background_callpyback
 def on_end(func_result, func_scope_vars):
     print(f'Done with a result: {func_result}!')
     print(f'Local function variables: {func_scope_vars}')
