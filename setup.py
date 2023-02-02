@@ -1,11 +1,16 @@
 from setuptools import setup, find_packages
+from pathlib import Path
 
+CUR_DIR = Path(__file__).parent
+LONG_DESCRIPTION = (CUR_DIR / "README.md").read_text()
 
 setup_args = dict(
     name="callpyback",
     packages=find_packages(),
     version="v1.0.0",
     description="Simple and readable Pure Python callbacks!",
+    long_description=LONG_DESCRIPTION,
+    long_description_content_type="text/markdown",
     author="samuelgregorovic",
     author_email="samuelgregorovic@gmail.com",
     url="https://github.com/samuelgregorovic/callpyback",
