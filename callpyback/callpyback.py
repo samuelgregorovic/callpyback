@@ -69,6 +69,23 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
         self.validate_callbacks()
         self.validate_pass_vars()
         self.validate_exception_classes()
+        self.validate_across_mixins()
+
+    def validate_across_mixins(self):
+        """Performs cross-mixin validation, which cannot be tested separately.
+
+        Executes following checks:
+            1. If `pass_vars` is defined, `on_end` must be defined.
+
+        Args:
+            N/A
+        Returns:
+            None
+        Raises:
+            RuntimeError: Raised if `pass_vars` is defined but `on_end` callback is not.
+        """
+        if self.pass_vars and self.on_end is _default_callback:
+            raise RuntimeError("If `pass_vars` is defined, `on_end` must be defined.")
 
     def __call__(self, func):
         """Invoked on decorator instance call.

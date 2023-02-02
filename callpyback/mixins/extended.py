@@ -21,23 +21,19 @@ class ExtendedCallBackMixin:
         """Validates `pass_vars` constructor argument.
 
         Executes following checks:
-            1. If `pass_vars` is defined, `on_end` must be defined.
-            2. Parameter `pass_vars` must be `list`, `tuple` or `set`.
-            3. Variable in `pass_vars` must be of type `str`.
+            1. Parameter `pass_vars` must be `list`, `tuple` or `set`.
+            2. Variable in `pass_vars` must be of type `str`.
 
         Args:
             N/A
         Returns:
             None
         Raises:
-            RuntimeError: Raised if `pass_vars` is defined but `on_end` callback is not.
             TypeError: Raised if `pass_vars` is not of type `list`, `tuple` or `set`.
             TypeError: Raised if one of variables in `pass_vars` is not of type `str`.
         """
         if not self.pass_vars:
             return
-        if self.pass_vars and self.on_end is _default_callback:
-            raise RuntimeError("If `pass_vars` is defined, `on_end` must be defined.")
         if not isinstance(self.pass_vars, (list, tuple, set)):
             raise TypeError("Parameter `pass_vars` must be `list`, `tuple` or `set`.")
         for var in self.pass_vars:
