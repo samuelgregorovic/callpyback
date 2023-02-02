@@ -21,8 +21,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - uses: psf/black@stable
       - name: Format code with black
+        uses: psf/black@stable
         with:
           options: "--check --verbose"
           src: "./callpyback"
