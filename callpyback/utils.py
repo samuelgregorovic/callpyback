@@ -19,7 +19,7 @@ def background_callpyback(func):
     return func
 
 
-def _default_callback(*_, **__):
+def _default_callback():
     """Default callback function to be used when callback function is not provided."""
 
 

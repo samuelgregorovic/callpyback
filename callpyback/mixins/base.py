@@ -5,6 +5,14 @@ import threading
 
 from callpyback.utils import _default_callback
 
+AVAILABLE_CALLBACKS = ("on_call", "on_success", "on_failure", "on_end")
+CALLBACK_PARAMETER_MAP = {
+    "on_call": {"func_kwargs"},
+    "on_success": {"func_result", "func_kwargs"},
+    "on_failure": {"func_exception", "func_kwargs"},
+    "on_end": {"func_result", "func_exception", "func_kwargs", "func_scope_vars"},
+}
+
 
 class BaseCallBackMixin:
     """Class implementing basic callback features.
@@ -77,6 +85,8 @@ class BaseCallBackMixin:
         Executes following checks:
             1. Callback must be a Callable type.
             2. Callback cannot be an async coroutine.
+            3. Callback must accepted some or none of the parameters specified
+               in CALLBACK_PARAMETER_MAP.
 
         Args:
             N/A
@@ -85,13 +95,22 @@ class BaseCallBackMixin:
         Raises:
             TypeError: Raised if one of the callbacks is not Callable.
             TypeError: Raised if one of the callbacks is an async coroutine.
+            AssertionError: Raised if one of the callbacks has invalid parameters.
         """
-        for callback in self.callbacks:
+        for callback_name, callback in zip(AVAILABLE_CALLBACKS, self.callbacks):
             if not callable(callback):
                 raise TypeError(f"Callback must be a callable not {type(callback)}.")
             if inspect.iscoroutinefunction(callback):
                 raise TypeError(
                     f"Callback `{callback.__name__}` cannot be a coroutine."
+                )
+            found_params = sorted(inspect.signature(callback).parameters)
+            expected_params = sorted(CALLBACK_PARAMETER_MAP[callback_name])
+            if not set(found_params).issubset(set(expected_params)):
+                raise AssertionError(
+                    f"Signature of callback `{callback_name}` is invalid.\n"
+                    f"Expected: No parameter or combination of: {','.join(expected_params)}.\n"
+                    f"Found: {','.join(found_params)}."
                 )
 
     def run_callback_func(self, func, func_kwargs):

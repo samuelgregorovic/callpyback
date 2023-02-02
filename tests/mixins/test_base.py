@@ -82,7 +82,12 @@ class Test_validate_callbacks:
     def test_correct(self):
         """Tests that no errors are raised when callbacks are correct."""
         # Mocks
-        mixin_obj = create_mixin_obj()
+        mixin_obj = create_mixin_obj(
+            on_call=_default_callback,
+            on_success=_default_callback,
+            on_failure=_default_callback,
+            on_end=_default_callback,
+        )
         # Calls
         mixin_obj.validate_callbacks()
         # Assertions
@@ -116,6 +121,27 @@ class Test_validate_callbacks:
         with pytest.raises(
             TypeError, match="Callback `test_coroutine` cannot be a coroutine."
         ):
+            mixin_obj.validate_callbacks()
+
+    def test_bad_parameters(self):
+        """Tests that error is raised when one of the callbacks accepts wrong combination
+        of parameters."""
+
+        # Mocks
+        def on_call(x, y):
+            pass
+
+        mixin_obj = create_mixin_obj(
+            on_call=on_call,
+        )
+        expected_error_message = (
+            "Signature of callback `on_call` is invalid.\n"
+            "Expected: No parameter or combination of: func_kwargs.\n"
+            "Found: x,y."
+        )
+        # Calls
+        # Assertions
+        with pytest.raises(AssertionError, match=expected_error_message):
             mixin_obj.validate_callbacks()
 
 
