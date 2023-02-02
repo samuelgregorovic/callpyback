@@ -1,4 +1,4 @@
-name: Build and test callpyback
+name: build
 on: 
   push:
     branches:
@@ -26,7 +26,6 @@ jobs:
         with:
           options: "--check --verbose"
           src: "./callpyback"
-          version: "21.5b1"
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
