@@ -18,10 +18,7 @@
 ## Description
 "callpyback" is a comprehensive Python library designed to help developers add callbacks to their functions with ease. It comes with a range of powerful features that make it easy to customize the behavior of your functions in different stages of their execution. 
 
-You can specify callbacks for on_call, on_success, on_failure, and on_end, and customize the default return value from the decorated function. Additionally, you can pass local scope variables of the decorated function to the on_end callback and define expected exceptions to trigger the on_failure callback. If desired, you can also omit callbacks, falling back to default behavior, and choose which parameters of the callback function to use. Furthermore, with the @background_callback decorator, you can execute callbacks on the background, making it easier to manage concurrency in your applications.
-
-Overall, "callpyback" offers a flexible and convenient way to enhance the functionality of your functions, making it a must-have tool for any Python developer.
-
+You can specify callbacks for on_call, on_success, on_failure, and on_end, and customize the default return value from the decorated function. Additionally, you can pass local scope variables of the decorated function to the on_end callback and define expected exceptions to trigger the on_failure callback. If desired, you can also omit callbacks, falling back to default behavior, and choose which parameters of the callback function to use. Furthermore, with the @background_callback decorator, you can execute callbacks on the background, making it easier to manage concurrency in your code.
 ## Features
 
 - Support `on_call`, `on_success`, `on_failure` and `on_end` callbacks
