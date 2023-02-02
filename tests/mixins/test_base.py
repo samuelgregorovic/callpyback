@@ -123,26 +123,44 @@ class Test_validate_callbacks:
         ):
             mixin_obj.validate_callbacks()
 
+
+class Test_validate_callback_parameters:
+    """Class containing tests for validate_callback_parameters method"""
+
+    def test_correct(self):
+        """Tests that no errors are raised when callback parameters are correct."""
+
+        # Mocks
+        def on_success(func_result, func_kwargs):
+            pass
+
+        mixin_obj = create_mixin_obj(on_success=on_success)
+
+        # Calls
+        mixin_obj.validate_callback_parameters(on_success, "on_success")
+        # Assertions
+        assert True
+
     def test_bad_parameters(self):
         """Tests that error is raised when one of the callbacks accepts wrong combination
         of parameters."""
 
         # Mocks
-        def on_call(x, y):
+        def on_success(x, y):
             pass
 
         mixin_obj = create_mixin_obj(
-            on_call=on_call,
+            on_success=on_success,
         )
         expected_error_message = (
-            "Signature of callback `on_call` is invalid.\n"
-            "Expected: No parameter or combination of: func_kwargs.\n"
+            "Signature of callback `on_success` is invalid.\n"
+            "Expected: No parameter or combination of: func_kwargs,func_result.\n"
             "Found: x,y."
         )
         # Calls
         # Assertions
         with pytest.raises(AssertionError, match=expected_error_message):
-            mixin_obj.validate_callbacks()
+            mixin_obj.validate_callback_parameters(on_success, "on_success")
 
 
 class Test_run_callback_func:

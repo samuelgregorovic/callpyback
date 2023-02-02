@@ -99,14 +99,27 @@ class BaseCallBackMixin:
                 raise TypeError(
                     f"Callback `{callback.__name__}` cannot be a coroutine."
                 )
-            found_params = sorted(inspect.signature(callback).parameters)
-            expected_params = sorted(CALLBACK_PARAMETER_MAP[callback_name])
-            if not set(found_params).issubset(set(expected_params)):
-                raise AssertionError(
-                    f"Signature of callback `{callback_name}` is invalid.\n"
-                    f"Expected: No parameter or combination of: {','.join(expected_params)}.\n"
-                    f"Found: {','.join(found_params)}."
-                )
+            self.validate_callback_parameters(callback, callback_name)
+
+    def validate_callback_parameters(self, callback, callback_name):
+        """Validates callback parameters to be accepted by the callback function.
+
+        Args:
+            callback (func): callback function.
+            callback_name (str): name of the callback function.
+        Returns:
+            None
+        Raises:
+            AssertionError: Raised if one of the callback parameters is invalid.
+        """
+        found_params = sorted(inspect.signature(callback).parameters)
+        expected_params = sorted(CALLBACK_PARAMETER_MAP[callback_name])
+        if not set(found_params).issubset(set(expected_params)):
+            raise AssertionError(
+                f"Signature of callback `{callback_name}` is invalid.\n"
+                f"Expected: No parameter or combination of: {','.join(expected_params)}.\n"
+                f"Found: {','.join(found_params)}."
+            )
 
     def run_callback_func(self, func, func_kwargs):
         """Executes given callback function with given kwargs.
