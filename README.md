@@ -47,7 +47,7 @@ def on_failure(func_exception):
     print(f'Failed with an error: {func_exception}!')
 
 
-@CallPyBack(on_call=on_call, on_success=on_success, on_failure=on_failure
+@CallPyBack(on_call=on_call, on_success=on_success, on_failure=on_failure)
 def method()
     pass
 
