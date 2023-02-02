@@ -7,7 +7,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/6473b57bc8600e5ad6f6/maintainability)](https://codeclimate.com/github/samuelgregorovic/callpyback/maintainability)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Repo Size](https://img.shields.io/github/repo-size/samuelgregorovic/callpyback)]
+![ Repo Size](https://img.shields.io/github/repo-size/samuelgregorovic/callpyback)
 [![Downloads](https://static.pepy.tech/badge/callpyback)](https://pepy.tech/project/callpyback)
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/samuelgregorovic/callpyback)](https://github.com/samuelgregorovic/callpyback/pulse)
