@@ -1,7 +1,6 @@
 """Module containing CallPyBack implementation"""
-import sys
 
-from callpyback.utils import _default_callback
+from callpyback.utils import _default_callback, args_to_kwargs
 from callpyback.mixins.base import BaseCallBackMixin
 from callpyback.mixins.extended import ExtendedCallBackMixin
 
@@ -129,7 +128,7 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
         Args:
             func(Callable): Decorated function to be executed amongst callbacks.
             func_args(tuple): Arguments for the decorated function.
-            kwargs(dict): Keyword arguments for the decorated function.
+            func_kwargs(dict): Keyword arguments for the decorated function.
         Returns:
             Any: Decorated function result or `default_return` value.
         Raises:
@@ -138,17 +137,18 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
         """
         self.validate_arguments()
         self.set_tracer_profile(self.tracer)
+        all_func_kwargs = args_to_kwargs(func, func_args, func_kwargs)
         func_exception, func_result, func_scope_vars = None, None, []
         try:
-            self.run_on_call_func(func_args, func_kwargs)
-            func_result = func(*func_args, **func_kwargs)
+            self.run_on_call_func(all_func_kwargs)
+            func_result = func(**all_func_kwargs)
             func_scope_vars = self.get_func_scope_vars()
-            self.run_on_success_func(func_result, func_args, func_kwargs)
+            self.run_on_success_func(func_result, all_func_kwargs)
             return func_result
         except self.exception_classes as ex:
             func_exception = ex
             func_scope_vars = self.get_func_scope_vars()
-            self.run_on_failure_func(func_exception, func_args, func_kwargs)
+            self.run_on_failure_func(func_exception, all_func_kwargs)
             return self.default_return
         finally:
             self.set_tracer_profile(None)
@@ -156,5 +156,5 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
                 raise func_exception
             result = func_result if not func_exception else self.default_return
             self.run_on_end_func(
-                result, func_exception, func_args, func_kwargs, func_scope_vars
+                result, func_exception, all_func_kwargs, func_scope_vars
             )

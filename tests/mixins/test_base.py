@@ -160,14 +160,13 @@ class Test_run_on_call_func:
         # Mocks
         on_call = MagicMock()
         mixin_obj = create_mixin_obj(on_call=on_call)
-        func_args = (1, 2, 3)
         func_kwargs = {"var": "value"}
         mixin_obj.get_on_call_kwargs = MagicMock(return_value={"var1": "value1"})
         mixin_obj.run_callback_func = MagicMock()
         # Calls
-        mixin_obj.run_on_call_func(func_args, func_kwargs)
+        mixin_obj.run_on_call_func(func_kwargs)
         # Assertions
-        mixin_obj.get_on_call_kwargs.assert_called_once_with(func_args, func_kwargs)
+        mixin_obj.get_on_call_kwargs.assert_called_once_with(func_kwargs)
         mixin_obj.run_callback_func.assert_called_once_with(on_call, {"var1": "value1"})
 
 
@@ -179,16 +178,15 @@ class Test_run_on_success_func:
         # Mocks
         on_success = MagicMock()
         mixin_obj = create_mixin_obj(on_success=on_success)
-        func_args = (1, 2, 3)
         func_kwargs = {"var": "value"}
         func_result = -1
         mixin_obj.get_on_success_kwargs = MagicMock(return_value={"var1": "value1"})
         mixin_obj.run_callback_func = MagicMock()
         # Calls
-        mixin_obj.run_on_success_func(func_result, func_args, func_kwargs)
+        mixin_obj.run_on_success_func(func_result, func_kwargs)
         # Assertions
         mixin_obj.get_on_success_kwargs.assert_called_once_with(
-            func_result, func_args, func_kwargs
+            func_result, func_kwargs
         )
         mixin_obj.run_callback_func.assert_called_once_with(
             on_success, {"var1": "value1"}
@@ -203,16 +201,15 @@ class Test_run_on_failure_func:
         # Mocks
         on_failure = MagicMock()
         mixin_obj = create_mixin_obj(on_failure=on_failure)
-        func_args = (1, 2, 3)
         func_kwargs = {"var": "value"}
         func_exception = Exception("some error")
         mixin_obj.get_on_failure_kwargs = MagicMock(return_value={"var1": "value1"})
         mixin_obj.run_callback_func = MagicMock()
         # Calls
-        mixin_obj.run_on_failure_func(func_exception, func_args, func_kwargs)
+        mixin_obj.run_on_failure_func(func_exception, func_kwargs)
         # Assertions
         mixin_obj.get_on_failure_kwargs.assert_called_once_with(
-            func_exception, func_args, func_kwargs
+            func_exception, func_kwargs
         )
         mixin_obj.run_callback_func.assert_called_once_with(
             on_failure, {"var1": "value1"}
@@ -227,7 +224,6 @@ class Test_run_on_end_func:
         # Mocks
         on_end = MagicMock()
         mixin_obj = create_mixin_obj(on_end=on_end)
-        func_args = (1, 2, 3)
         func_kwargs = {"var": "value"}
         func_result = -1
         func_scope_vars = {"var1": "value1"}
@@ -236,11 +232,11 @@ class Test_run_on_end_func:
         mixin_obj.run_callback_func = MagicMock()
         # Calls
         mixin_obj.run_on_end_func(
-            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+            func_result, func_exception, func_kwargs, func_scope_vars
         )
         # Assertions
         mixin_obj.get_on_end_kwargs.assert_called_once_with(
-            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+            func_result, func_exception, func_kwargs, func_scope_vars
         )
         mixin_obj.run_callback_func.assert_called_once_with(on_end, {"var1": "value1"})
 
@@ -256,11 +252,10 @@ class Test_get_on_call_kwargs:
         def on_call():
             pass
 
-        func_args = (1, 2)
         func_kwargs = {"var1": "key1"}
         mixin_obj = create_mixin_obj(on_call=on_call)
         # Calls
-        on_call_kwargs = mixin_obj.get_on_call_kwargs(func_args, func_kwargs)
+        on_call_kwargs = mixin_obj.get_on_call_kwargs(func_kwargs)
         # Assertions
         assert on_call_kwargs == {}
 
@@ -269,16 +264,15 @@ class Test_get_on_call_kwargs:
         in the signature of `on_call` callback function."""
 
         # Mocks
-        def on_call(func_args, func_kwargs):
+        def on_call(func_kwargs):
             pass
 
-        func_args = (1, 2)
         func_kwargs = {"var1": "key1"}
         mixin_obj = create_mixin_obj(on_call=on_call)
         # Calls
-        on_call_kwargs = mixin_obj.get_on_call_kwargs(func_args, func_kwargs)
+        on_call_kwargs = mixin_obj.get_on_call_kwargs(func_kwargs)
         # Assertions
-        assert on_call_kwargs == {"func_args": func_args, "func_kwargs": func_kwargs}
+        assert on_call_kwargs == {"func_kwargs": func_kwargs}
 
 
 class Test_get_on_success_kwargs:
@@ -293,13 +287,10 @@ class Test_get_on_success_kwargs:
             pass
 
         func_result = -1
-        func_args = (1, 2)
         func_kwargs = {"var1": "key1"}
         mixin_obj = create_mixin_obj(on_success=on_success)
         # Calls
-        on_success_kwargs = mixin_obj.get_on_success_kwargs(
-            func_result, func_args, func_kwargs
-        )
+        on_success_kwargs = mixin_obj.get_on_success_kwargs(func_result, func_kwargs)
         # Assertions
         assert on_success_kwargs == {}
 
@@ -308,21 +299,17 @@ class Test_get_on_success_kwargs:
         in the signature of `on_success` callback function."""
 
         # Mocks
-        def on_success(func_result, func_args, func_kwargs):
+        def on_success(func_result, func_kwargs):
             pass
 
         func_result = -1
-        func_args = (1, 2)
         func_kwargs = {"var1": "key1"}
         mixin_obj = create_mixin_obj(on_success=on_success)
         # Calls
-        on_success_kwargs = mixin_obj.get_on_success_kwargs(
-            func_result, func_args, func_kwargs
-        )
+        on_success_kwargs = mixin_obj.get_on_success_kwargs(func_result, func_kwargs)
         # Assertions
         assert on_success_kwargs == {
             "func_result": -1,
-            "func_args": func_args,
             "func_kwargs": func_kwargs,
         }
 
@@ -339,13 +326,10 @@ class Test_get_on_failure_kwargs:
             pass
 
         func_exception = Exception("some error")
-        func_args = (1, 2)
         func_kwargs = {"var1": "key1"}
         mixin_obj = create_mixin_obj(on_failure=on_failure)
         # Calls
-        on_failure_kwargs = mixin_obj.get_on_failure_kwargs(
-            func_exception, func_args, func_kwargs
-        )
+        on_failure_kwargs = mixin_obj.get_on_failure_kwargs(func_exception, func_kwargs)
         # Assertions
         assert on_failure_kwargs == {}
 
@@ -354,21 +338,17 @@ class Test_get_on_failure_kwargs:
         in the signature of `on_failure` callback function."""
 
         # Mocks
-        def on_failure(func_exception, func_args, func_kwargs):
+        def on_failure(func_exception, func_kwargs):
             pass
 
         func_exception = Exception("some error")
-        func_args = (1, 2)
         func_kwargs = {"var1": "key1"}
         mixin_obj = create_mixin_obj(on_failure=on_failure)
         # Calls
-        on_failure_kwargs = mixin_obj.get_on_failure_kwargs(
-            func_exception, func_args, func_kwargs
-        )
+        on_failure_kwargs = mixin_obj.get_on_failure_kwargs(func_exception, func_kwargs)
         # Assertions
         assert on_failure_kwargs == {
             "func_exception": func_exception,
-            "func_args": func_args,
             "func_kwargs": func_kwargs,
         }
 
@@ -386,13 +366,12 @@ class Test_get_on_end_kwargs:
 
         func_result = -1
         func_exception = Exception("some error")
-        func_args = (1, 2)
         func_kwargs = {"var1": "key1"}
         func_scope_vars = {"var2": "value2"}
         mixin_obj = create_mixin_obj(on_end=on_end)
         # Calls
         on_end_kwargs = mixin_obj.get_on_end_kwargs(
-            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+            func_result, func_exception, func_kwargs, func_scope_vars
         )
         # Assertions
         assert on_end_kwargs == {}
@@ -402,26 +381,22 @@ class Test_get_on_end_kwargs:
         in the signature of `on_end` callback function."""
 
         # Mocks
-        def on_end(
-            func_result, func_exception, func_args, func_kwargs, func_scope_vars
-        ):
+        def on_end(func_result, func_exception, func_kwargs, func_scope_vars):
             pass
 
         func_result = -1
         func_exception = Exception("some error")
-        func_args = (1, 2)
         func_kwargs = {"var1": "key1"}
         func_scope_vars = {"var2": "value2"}
         mixin_obj = create_mixin_obj(on_end=on_end)
         # Calls
         on_end_kwargs = mixin_obj.get_on_end_kwargs(
-            func_result, func_exception, func_args, func_kwargs, func_scope_vars
+            func_result, func_exception, func_kwargs, func_scope_vars
         )
         # Assertions
         assert on_end_kwargs == {
             "func_result": func_result,
             "func_exception": func_exception,
-            "func_args": func_args,
             "func_kwargs": func_kwargs,
             "func_scope_vars": func_scope_vars,
         }
