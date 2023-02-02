@@ -1,3 +1,5 @@
+"""Module containing BaseCallBackMixin implementation"""
+
 import inspect
 import threading
 
@@ -5,6 +7,38 @@ from callpyback.utils import _default_callback
 
 
 class BaseCallBackMixin:
+    """Class implementing basic callback features.
+
+    Attributes:
+        N/A
+
+    Methods:
+        validate_callbacks():
+            Validates callbacks passed to class constructor.
+        run_callback_func(func, func_kwargs):
+            Executes given callback function with given kwargs.
+        run_on_call_func(func_args, func_kwargs):
+            Generates kwargs for given `on_call` callback function and executes
+            it with generated kwargs.
+        run_on_success_func(func_result, func_args, func_kwargs):
+            Generates kwargs for given `on_success` callback function and executes
+            it with generated kwargs.
+        run_on_failure_func(func_exception, func_args, func_kwargs):
+            Generates kwargs for given `on_failure` callback function and executes
+            it with generated kwargs.
+        run_on_end_func(func_result, func_exception, func_args, func_kwargs, func_scope_vars):
+            Generates kwargs for given `on_end` callback function and executes
+            it with generated kwargs.
+        get_on_call_kwargs(func_args, func_kwargs):
+            Generates kwargs for `on_call` callback function.
+        get_on_success_kwargs(func_result, func_args, func_kwargs):
+            Generates kwargs for `on_success` callback function.
+        get_on_failure_kwargs(func_exception, func_args, func_kwargs):
+            Generates kwargs for `on_failure` callback function.
+        get_on_end_kwargs(func_result, func_exception, func_args, func_kwargs, func_scope_vars):
+            Generates kwargs for `on_end` callback function.
+    """
+
     def __init__(
         self,
         on_call=_default_callback,
@@ -13,6 +47,23 @@ class BaseCallBackMixin:
         on_end=_default_callback,
         **kwargs,
     ):
+        """Class constructor. Sets instance variables.
+
+        Args:
+            on_call (Callable, optional): Function to be called before function execution.
+                Defaults to DEFAULT_ON_CALL_LAMBDA.
+            on_success (Callable, optional): Function to be called after successfull execution.
+                Defaults to DEFAULT_ON_SUCCESS_LAMBDA.
+            on_failure (Callable, optional): Function to be called after execution with errors.
+                Defaults to DEFAULT_ON_FAILURE_LAMBDA.
+            on_end (Callable, optional): Function to be called after execution regardless of result.
+                Defaults to DEFAULT_ON_END_LAMBDA.
+
+        Returns:
+            BaseCallBackMixin: mixin instance
+        Raises:
+            N/A
+        """
         super().__init__(**kwargs)
         self.on_call = on_call
         self.on_success = on_success

@@ -168,3 +168,53 @@ class Test_get_func_scope_vars:
         func_scope_vars = mixin_obj.get_func_scope_vars()
         # Assertions
         assert func_scope_vars == {"var1": "value1", "var2": "<not-found>"}
+
+
+class Test_set_tracer_profile:
+    """Test set_tracer_profile method."""
+
+    def test_default_tracer(self):
+        """Tests that setting tracer profile executes successfully."""
+        # Mocks
+        mixin_obj = create_mixin_obj()
+        # Calls
+        mixin_obj.set_tracer_profile(None)
+        # Assertions
+        assert True
+
+
+class Test_tracer:
+    """Test tracer method"""
+
+    def test_return_event(self):
+        """Tests that local scope variables are extracted and saved to
+        the instance attribute when `return` event is triggered."""
+        # Mocks
+        mixin_obj = create_mixin_obj()
+
+        class DummyFrame:
+            def __init__(self, f_locals):
+                self.f_locals = f_locals
+
+        frame = DummyFrame({"x": "y"})
+        assert mixin_obj.local_vars == {}
+        # Calls
+        mixin_obj.tracer(frame, "return", None)
+        # Assertions
+        assert mixin_obj.local_vars == {"x": "y"}
+
+    def test_other_event(self):
+        """Test that other events than `return` are ignored."""
+        # Mocks
+        mixin_obj = create_mixin_obj()
+
+        class DummyFrame:
+            def __init__(self, f_locals):
+                self.f_locals = f_locals
+
+        frame = DummyFrame({"x": "y"})
+        assert mixin_obj.local_vars == {}
+        # Calls
+        mixin_obj.tracer(frame, "yield", None)
+        # Assertions
+        assert mixin_obj.local_vars == {}

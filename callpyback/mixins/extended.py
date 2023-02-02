@@ -1,9 +1,23 @@
+"""Module containing BaseCallBackMixin implementation"""
+import sys
 import inspect
-
-from callpyback.utils import _default_callback
 
 
 class ExtendedCallBackMixin:
+    """Class implementing callback decorator.
+
+    Attributes:
+        N/A
+
+    Methods:
+        validate_pass_vars():
+            Validates `pass_vars` constructor argument.
+        validate_exception_classes():
+            Validates `exception_classes` constructor argument.
+        get_func_scope_vars():
+            Gets requested decorated function's scope variables, specified in `pass_vars` attribute.
+    """
+
     def __init__(
         self,
         default_return=None,
@@ -11,6 +25,21 @@ class ExtendedCallBackMixin:
         exception_classes=(Exception,),
         **kwargs,
     ):
+        """Class constructor. Sets instance variables.
+
+        Args:
+            default_return (Any, optional): Result to be returned in case of error or no return.
+                Defaults to None.
+            pass_vars (list|tuple|set, optional): Variable names to be passed to `on_end` callback.
+                Defaults to None.
+            exception_classes (list|tuple|set): Exception classes to be caught.
+                Defaults to (Exception,).
+
+        Returns:
+            ExtendedCallBackMixin: mixin instance
+        Raises:
+            N/A
+        """
         super().__init__(**kwargs)
         self.default_return = default_return
         self.pass_vars = pass_vars
@@ -85,3 +114,30 @@ class ExtendedCallBackMixin:
             func_scope_vars[var_name] = self.local_vars.get(var_name, "<not-found>")
         self.local_vars = {}
         return func_scope_vars
+
+    def set_tracer_profile(self, tracer):
+        """Sets custom tracer to the sys profile.
+
+        Args:
+            tracer (Tracer): Tracer to be set.
+        Returns:
+            None
+        Raises:
+            N/A
+        """
+        sys.setprofile(tracer)
+
+    def tracer(self, frame, event, _):
+        """Represents tracer for storing local variables from last executed function.
+        Upon function return, this tracer saves function locals to `local_vars` instance attribute.
+
+        Args:
+            frame (Frame): Frame to be traced.
+            event (Event): Event for tracing.
+        Returns:
+            None
+        Raises:
+            N/A
+        """
+        if event == "return":
+            self.local_vars = frame.f_locals.copy()

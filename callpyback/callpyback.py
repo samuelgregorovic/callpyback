@@ -7,9 +7,6 @@ from callpyback.mixins.extended import ExtendedCallBackMixin
 
 
 class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     """Class implementing callback decorator.
 
     Attributes:
@@ -18,12 +15,8 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
     Methods:
         validate_arguments():
             Runs validation functions for constructor arguments.
-        validate_callbacks():
-            Validates callbacks passed to class constructor.
-        validate_pass_vars():
-            Validates `pass_vars` constructor argument.
-        validate_exception_classes():
-            Validates `exception_classes` constructor argument.
+        validate_across_mixins():
+            Performs cross-mixin validation, which cannot be tested separately.
         __call__(func):
             Invoked on decorator instance call.
         main(func, *args, **kwargs):
@@ -32,31 +25,33 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
             Sets custom tracer profile.
         tracer(frame, event, _):
             Represents tracer for storing local variables from last executed function.
-        run_callback_func(func, func_kwargs):
-            Executes given callback function with given kwargs.
-        run_on_call_func(func_args, func_kwargs):
-            Generates kwargs for given `on_call` callback function and executes
-            it with generated kwargs.
-        run_on_success_func(func_result, func_args, func_kwargs):
-            Generates kwargs for given `on_success` callback function and executes
-            it with generated kwargs.
-        run_on_failure_func(func_exception, func_args, func_kwargs):
-            Generates kwargs for given `on_failure` callback function and executes
-            it with generated kwargs.
-        run_on_end_func(func_result, func_exception, func_args, func_kwargs, func_scope_vars):
-            Generates kwargs for given `on_end` callback function and executes
-            it with generated kwargs.
-        get_func_scope_vars():
-            Gets requested decorated function's scope variables, specified in `pass_vars` attribute.
-        get_on_call_kwargs(func_args, func_kwargs):
-            Generates kwargs for `on_call` callback function.
-        get_on_success_kwargs(func_result, func_args, func_kwargs):
-            Generates kwargs for `on_success` callback function.
-        get_on_failure_kwargs(func_exception, func_args, func_kwargs):
-            Generates kwargs for `on_failure` callback function.
-        get_on_end_kwargs(func_result, func_exception, func_args, func_kwargs, func_scope_vars):
-            Generates kwargs for `on_end` callback function.
     """
+
+    def __init__(self, **kwargs):
+        """Class constructor. Sets instance variables.
+
+        Args:
+            on_call (Callable, optional): Function to be called before function execution.
+                Defaults to DEFAULT_ON_CALL_LAMBDA.
+            on_success (Callable, optional): Function to be called after successfull execution.
+                Defaults to DEFAULT_ON_SUCCESS_LAMBDA.
+            on_failure (Callable, optional): Function to be called after execution with errors.
+                Defaults to DEFAULT_ON_FAILURE_LAMBDA.
+            on_end (Callable, optional): Function to be called after execution regardless of result.
+                Defaults to DEFAULT_ON_END_LAMBDA.
+            default_return (Any, optional): Result to be returned in case of error or no return.
+                Defaults to None.
+            pass_vars (list|tuple|set, optional): Variable names to be passed to `on_end` callback.
+                Defaults to None.
+            exception_classes (list|tuple|set): Exception classes to be caught.
+                Defaults to (Exception,).
+
+        Returns:
+            CallPyBack: decorator instance
+        Raises:
+            N/A
+        """
+        super().__init__(**kwargs)
 
     def validate_arguments(self):
         """Runs validation functions for constructor arguments.
@@ -163,30 +158,3 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
             self.run_on_end_func(
                 result, func_exception, func_args, func_kwargs, func_scope_vars
             )
-
-    def set_tracer_profile(self, tracer):
-        """Sets custom tracer to the sys profile.
-
-        Args:
-            tracer (Tracer): Tracer to be set.
-        Returns:
-            None
-        Raises:
-            N/A
-        """
-        sys.setprofile(tracer)
-
-    def tracer(self, frame, event, _):
-        """Represents tracer for storing local variables from last executed function.
-        Upon function return, this tracer saves function locals to `local_vars` instance attribute.
-
-        Args:
-            frame (Frame): Frame to be traced.
-            event (Event): Event for tracing.
-        Returns:
-            None
-        Raises:
-            N/A
-        """
-        if event == "return":
-            self.local_vars = frame.f_locals.copy()
