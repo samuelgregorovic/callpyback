@@ -1,4 +1,4 @@
-name: Build and test callpyback
+name: build
 on: 
   push:
     branches:
@@ -21,6 +21,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Format code with black
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+          src: "./callpyback"
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -29,4 +34,8 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
-          pytest tests/ --doctest-modules --junitxml=junit/test-results.xml --cov=callpyback --cov-report=xml --cov-report=html
+          pytest tests/ --cov=callpyback/
+      - name: Generate coverage with coveralls
+        run: |
+          COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
+        
