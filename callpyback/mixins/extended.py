@@ -16,6 +16,10 @@ class ExtendedCallBackMixin:
             Validates `exception_classes` constructor argument.
         get_func_scope_vars():
             Gets requested decorated function's scope variables, specified in `pass_vars` attribute.
+        set_tracer_profile(tracer):
+            Sets custom tracer profile.
+        tracer(frame, event, _):
+            Represents tracer for storing local variables from last executed function.
     """
 
     def __init__(

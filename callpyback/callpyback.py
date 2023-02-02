@@ -20,10 +20,6 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
             Invoked on decorator instance call.
         main(func, *args, **kwargs):
             Contains the actual callback logic.
-        set_tracer_profile(tracer):
-            Sets custom tracer profile.
-        tracer(frame, event, _):
-            Represents tracer for storing local variables from last executed function.
     """
 
     def __init__(self, **kwargs):
