@@ -23,6 +23,7 @@ You can specify callbacks for on_call, on_success, on_failure, and on_end, and c
 ## Features
 
 - Support `on_call`, `on_success`, `on_failure` and `on_end` callbacks
+- Pass decorated function **kwargs and function itself to callbacks
 - Option to specify default return from the decorated function
 - Option to pass local scope variables of the decorated function to the `on_end` callback
 - Option to specify exception classes to be expected and invoke `on_failure` callback
@@ -45,17 +46,21 @@ Package is currently available under the same name at [![PyPI version](https://b
 In latest version of `callpyback`, when declaring callback functions, following rules must be obeyed:
 
 a) `on_call()` callback MUST eitheraccept no parameters or combination of the following:
+- `func` - will receive reference to decorated function
 - `func_kwargs` - will receive parameters passed to the function decorated with `CallPyBack`
 
 b) `on_success()` callback MUST either accept no parameters or combination of the following:
+- `func` - will receive reference to decorated function
 - `func_result` - will receive return value of the function decorated with `CallPyBack`
 - `func_kwargs` - will receive parameters passed to the function decorated with `CallPyBack`
 
 c) `on_failure()` callback MUST either accept no parameters or combination of the following:
+- `func` - will receive reference to decorated function
 - `func_exception` - will receive exception raised by the function decorated with `CallPyBack`
 - `func_kwargs` - will receive parameters passed to the function decorated with `CallPyBack`
 
 d) `on_end()` callback MUST either accept no parameters or combination of the following:
+- `func` - will receive reference to decorated function
 - `func_result` - will receive return value of the function decorated with `CallPyBack`
 - `func_exception` - will receive exception raised by the function decorated with `CallPyBack`
 - `func_kwargs` - will receive parameters passed to the function decorated with `CallPyBack`
