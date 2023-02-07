@@ -1,8 +1,6 @@
 import pytest
-from unittest.mock import MagicMock
 
 from callpyback.mixins.extended import ExtendedCallBackMixin
-from callpyback.utils import _default_callback
 
 
 class Test___init__:
@@ -47,7 +45,8 @@ def create_mixin_obj(
     pass_vars=None,
     exception_classes=(Exception,),
 ):
-    """Construct instance of BaseCallBackMixin object from supplied or default values."""
+    """Construct instance of BaseCallBackMixin object from supplied
+    or default values."""
     instance = ExtendedCallBackMixin(
         default_return=default_return,
         pass_vars=pass_vars,
@@ -78,24 +77,26 @@ class Test_validate_pass_vars:
         assert True
 
     def test_bad_list_type_error(self):
-        """Tests that error is raised when `pass_vars` is not a list, tuple or set."""
+        """Tests that error is raised when `pass_vars` is not a list,
+        tuple or set."""
         # Mocks
         mixin_obj = create_mixin_obj(pass_vars="bad_type")
         # Calls
         # Assertions
         with pytest.raises(
-            TypeError, match="Parameter `pass_vars` must be `list`, `tuple` or `set`."
+            TypeError, match="`pass_vars` must be `list`, `tuple` or `set`."
         ):
             mixin_obj.validate_pass_vars()
 
     def test_bad_variable_type_error(self):
-        """Tests that error is raised when one of `pass_vars` elements is not a string."""
+        """Tests that error is raised when one of `pass_vars` elements
+        is not a string."""
         # Mocks
         mixin_obj = create_mixin_obj(pass_vars=("x", 1))
         # Calls
         # Assertions
         with pytest.raises(
-            TypeError, match="Variable in `pass_vars` must be of type `str`."
+            TypeError, match="`pass_vars` elements must be of type `str`."
         ):
             mixin_obj.validate_pass_vars()
 
@@ -104,33 +105,34 @@ class Test_validate_exception_classes:
     """Class containing tests for validate_exception_classes method"""
 
     def test_list_type_error(self):
-        """Tests that error is raised when `exception_classes` is not a list, tuple or set."""
+        """Tests that error is raised when `exception_classes` is not a list,
+        tuple or set."""
         # Mocks
         mixin_obj = create_mixin_obj(exception_classes="not_a_list")
         # Calls
         # Assertions
         with pytest.raises(
             TypeError,
-            match="Parameter `exception_classes` must be `list`, `tuple` or `set`.",
+            match="`exception_classes` not `list`, `tuple` or `set`",
         ):
             mixin_obj.validate_exception_classes()
 
     def test_not_a_class_error(self):
-        """Tests that error is raised when one of the `exception_classes` elements
-        is not a class."""
+        """Tests that error is raised when one of the `exception_classes`
+        elements is not a class."""
         # Mocks
         mixin_obj = create_mixin_obj(exception_classes=("some_string",))
         # Calls
         # Assertions
         with pytest.raises(
             TypeError,
-            match="Element of `exception_classes` must be a class.",
+            match="Element of `exception_classes` not a class.",
         ):
             mixin_obj.validate_exception_classes()
 
     def test_exception_type_error(self):
-        """Tests that error is raised when one of the `exception_classes` elements
-        is not a subclass of `Exception`."""
+        """Tests that error is raised when one of the `exception_classes`
+        elements is not a subclass of `Exception`."""
 
         # Mocks
         class DummyClass:
@@ -141,7 +143,7 @@ class Test_validate_exception_classes:
         # Assertions
         with pytest.raises(
             TypeError,
-            match="Element of `exception_classes` must be a subclass of `Exception`.",
+            match="`exception_classes` must be a subclass of `Exception`.",
         ):
             mixin_obj.validate_exception_classes()
 
@@ -150,7 +152,8 @@ class Test_get_func_scope_vars:
     """Test get_func_scope_vars method"""
 
     def test_undefined_pass_vars(self):
-        """Tests that `get_func_scope_vars` returns empty dict if `pass_vars` are not defined."""
+        """Tests that `get_func_scope_vars` returns empty dict if `pass_vars`
+        are not defined."""
         # Mocks
         mixin_obj = create_mixin_obj()
         # Calls
@@ -159,8 +162,8 @@ class Test_get_func_scope_vars:
         assert func_scope_vars == {}
 
     def test_defined_pass_vars(self):
-        """Tests that `get_func_scope_vars` returns full dict if `pass_vars` are defined
-        and found in function scope variables."""
+        """Tests that `get_func_scope_vars` returns full dict if `pass_vars`
+        are defined and found in function scope variables."""
         # Mocks
         mixin_obj = create_mixin_obj(pass_vars=("var1", "var2"))
         mixin_obj.local_vars = {"var1": "value1", "var3": "value3"}

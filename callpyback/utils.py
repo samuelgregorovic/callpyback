@@ -4,8 +4,9 @@ import inspect
 
 def background_callpyback(func):
     """Decorator to mark a callback function as a background task.
-    Marking is done by assigning an attribute `background_callpyback` to the decorated function.
-    This will cause the callback to be executed in a separate thread without blocking.
+    Marking is done by assigning an attribute `background_callpyback`
+    to the decorated function. This will cause the callback to be executed
+    in a separate thread without blocking.
 
     Args:
         func (Callable): Decorated function to be marked as a background task.
@@ -20,7 +21,7 @@ def background_callpyback(func):
 
 
 def _default_callback():
-    """Default callback function to be used when callback function is not provided."""
+    """Default callback function to be used when callback is not provided."""
 
 
 def args_to_kwargs(func, func_args, func_kwargs):

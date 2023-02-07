@@ -26,18 +26,18 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
         """Class constructor. Sets instance variables.
 
         Args:
-            on_call (Callable, optional): Function to be called before function execution.
+            on_call (Callable, optional): Called before function execution.
                 Defaults to DEFAULT_ON_CALL_LAMBDA.
-            on_success (Callable, optional): Function to be called after successfull execution.
+            on_success (Callable, optional): Called after successfull run.
                 Defaults to DEFAULT_ON_SUCCESS_LAMBDA.
-            on_failure (Callable, optional): Function to be called after execution with errors.
+            on_failure (Callable, optional): Called after run with errors.
                 Defaults to DEFAULT_ON_FAILURE_LAMBDA.
-            on_end (Callable, optional): Function to be called after execution regardless of result.
+            on_end (Callable, optional): Called after every execution.
                 Defaults to DEFAULT_ON_END_LAMBDA.
-            default_return (Any, optional): Result to be returned in case of error or no return.
-                Defaults to None.
-            pass_vars (list|tuple|set, optional): Variable names to be passed to `on_end` callback.
-                Defaults to None.
+            default_return (Any, optional): Result to be returned in
+                case of error or no return. Defaults to None.
+            pass_vars (list|tuple|set, optional): Variable names to be passed
+                to `on_end` callback. Defaults to None.
             exception_classes (list|tuple|set): Exception classes to be caught.
                 Defaults to (Exception,).
 
@@ -72,22 +72,26 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
         Returns:
             None
         Raises:
-            RuntimeError: Raised if `pass_vars` is defined but `on_end` callback is not.
+            RuntimeError: Raised if `pass_vars` is defined but `on_end`
+            callback is not.
         """
         if self.pass_vars and self.on_end is _default_callback:
-            raise RuntimeError("If `pass_vars` is defined, `on_end` must be defined.")
+            raise RuntimeError(
+                "If `pass_vars` is defined, `on_end` must be defined.",
+            )
 
     def __call__(self, func):
         """Invoked on decorator instance call.
-        Holds logic of the callback process, including invoking callbacks and passed function.
+        Holds logic of the callback process, including invoking callbacks
+        and passed function.
 
         Functions:
             wrapper(*func_args, **func_kwargs):
                 Decorator class wrapper accepting `args` and `kwargs`
-                for the decorated function. Contains callback and execution logic.
+                for the decorated function. Contains callback logic.
 
         Args:
-            func (Callable): Decorated function to be executed amongst callbacks.
+            func (Callable): Decorated function to be executed.
         Returns:
             None
         Raises:
@@ -95,7 +99,8 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
         """
 
         def _wrapper(*func_args, **func_kwargs):
-            """Decorator class wrapper accepting `args` and `kwargs` for the decorated function.
+            """Decorator class wrapper accepting `args` and `kwargs` for the
+            decorated function.
             Calling main method containing callback logic."""
             return self.main(func, func_args, func_kwargs)
 
@@ -118,33 +123,34 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
                 7b. Executing `on_failure` callback (if defined).
                 8b. Returning `default_return` value
             9. Reverting to default tracer.
-            10. Re-raising decorated function exception if `on_end` callback is not defined.
+            10. Re-raising decorated function exception if `on_end` callback
+                is not defined.
             11. Executing `on_end` callback (if defined).
 
         Args:
-            func(Callable): Decorated function to be executed amongst callbacks.
+            func(Callable): Decorated function to be executed.
             func_args(tuple): Arguments for the decorated function.
             func_kwargs(dict): Keyword arguments for the decorated function.
         Returns:
             Any: Decorated function result or `default_return` value.
         Raises:
-            func_exception: Raised if error occurs during function execution, only if `on_end`
-                handler is not defined.
+            func_exception: Raised if error occurs during function execution,
+            only if `on_end` handler is not defined.
         """
         self.validate_arguments()
         self.set_tracer_profile(self.tracer)
         all_func_kwargs = args_to_kwargs(func, func_args, func_kwargs)
         func_exception, func_result, func_scope_vars = None, None, []
         try:
-            self.run_on_call_func(all_func_kwargs)
+            self.run_on_call_func(func, all_func_kwargs)
             func_result = func(**all_func_kwargs)
             func_scope_vars = self.get_func_scope_vars()
-            self.run_on_success_func(func_result, all_func_kwargs)
+            self.run_on_success_func(func, func_result, all_func_kwargs)
             return func_result
         except self.exception_classes as ex:
             func_exception = ex
             func_scope_vars = self.get_func_scope_vars()
-            self.run_on_failure_func(func_exception, all_func_kwargs)
+            self.run_on_failure_func(func, func_exception, all_func_kwargs)
             return self.default_return
         finally:
             self.set_tracer_profile(None)
@@ -152,5 +158,5 @@ class CallPyBack(BaseCallBackMixin, ExtendedCallBackMixin):
                 raise func_exception
             result = func_result if not func_exception else self.default_return
             self.run_on_end_func(
-                result, func_exception, all_func_kwargs, func_scope_vars
+                func, result, func_exception, all_func_kwargs, func_scope_vars
             )

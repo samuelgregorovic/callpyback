@@ -66,7 +66,8 @@ def create_mixin_obj(
     on_failure=MagicMock(),
     on_end=MagicMock(),
 ):
-    """Construct instance of BaseCallBackMixin object from supplied or default values."""
+    """Construct instance of BaseCallBackMixin object from supplied or
+    default values."""
     instance = BaseCallBackMixin(
         on_call=on_call,
         on_success=on_success,
@@ -94,20 +95,19 @@ class Test_validate_callbacks:
         assert True
 
     def test_not_callable_error(self):
-        """Tests that error is raised when one of the callbacks is not Callable."""
+        """Tests that error is raised when one of the callbacks is not
+        Callable."""
         # Mocks
         mixin_obj = create_mixin_obj(
             on_call="not_callable",
         )
         # Calls
         # Assertions
-        with pytest.raises(
-            TypeError, match="Callback must be a callable not <class 'str'>."
-        ):
+        with pytest.raises(TypeError, match="Callback must be a callable."):
             mixin_obj.validate_callbacks()
 
     def test_coroutine_error(self):
-        """Tests that error is raised when one of the callbacks is a coroutine."""
+        """Tests that error is raised when one of the callbacks is coroutine"""
 
         # Mocks
         async def test_coroutine():
@@ -128,7 +128,7 @@ class Test_validate_callback_parameters:
     """Class containing tests for validate_callback_parameters method"""
 
     def test_correct(self):
-        """Tests that no errors are raised when callback parameters are correct."""
+        """Tests that no errors are raised when callback parameters are ok."""
 
         # Mocks
         def on_success(func_result, func_kwargs):
@@ -142,8 +142,8 @@ class Test_validate_callback_parameters:
         assert True
 
     def test_bad_parameters(self):
-        """Tests that error is raised when one of the callbacks accepts wrong combination
-        of parameters."""
+        """Tests that error is raised when one of the callbacks accepts wrong
+        combination of parameters."""
 
         # Mocks
         def on_success(x, y):
@@ -154,7 +154,8 @@ class Test_validate_callback_parameters:
         )
         expected_error_message = (
             "Signature of callback `on_success` is invalid.\n"
-            "Expected: No parameter or combination of: func_kwargs,func_result.\n"
+            "Expected: No parameter or combination of: "
+            "func,func_kwargs,func_result.\n"
             "Found: x,y."
         )
         # Calls
@@ -167,7 +168,7 @@ class Test_run_callback_func:
     """Test run_callback_func method"""
 
     def test_blocking_callback(self):
-        """Tests that blocking callback executes successfully in a blocking way."""
+        """Tests that blocking callback executes successfully synchronously."""
         # Mocks
         mixin_obj = create_mixin_obj()
         func = MagicMock()
@@ -178,7 +179,7 @@ class Test_run_callback_func:
         func.assert_called_once_with(**func_kwargs)
 
     def test_background_callback(self):
-        """Tests that background callback (marked by @background_callpyback decorator)
+        """Tests that background callback (marked by @background_callpyback)
         executes successfully on a new thread (in a background)."""
         # Mocks
         mixin_obj = create_mixin_obj()
@@ -200,39 +201,53 @@ class Test_run_on_call_func:
     """Test run_on_call_func method"""
 
     def test_basic(self):
-        """Tests that `on_call` callback function gets its kwargs generated and is called."""
+        """Tests that `on_call` callback function gets its kwargs generated
+        and is called."""
         # Mocks
         on_call = MagicMock()
+        func = MagicMock()
         mixin_obj = create_mixin_obj(on_call=on_call)
         func_kwargs = {"var": "value"}
-        mixin_obj.get_callback_kwargs = MagicMock(return_value={"var1": "value1"})
+        mixin_obj.get_callback_kwargs = MagicMock(
+            return_value={"var1": "value1"},
+        )
         mixin_obj.run_callback_func = MagicMock()
         # Calls
-        mixin_obj.run_on_call_func(func_kwargs)
+        mixin_obj.run_on_call_func(func, func_kwargs)
         # Assertions
         mixin_obj.get_callback_kwargs.assert_called_once_with(
-            callback=on_call, func_kwargs=func_kwargs
+            callback=on_call, func=func, func_kwargs=func_kwargs
         )
-        mixin_obj.run_callback_func.assert_called_once_with(on_call, {"var1": "value1"})
+        mixin_obj.run_callback_func.assert_called_once_with(
+            on_call,
+            {"var1": "value1"},
+        )
 
 
 class Test_run_on_success_func:
     """Test run_on_success method"""
 
     def test_basic(self):
-        """Tests that `on_success` callback function gets its kwargs generated and is called."""
+        """Tests that `on_success` callback function gets its kwargs generated
+        and is called."""
         # Mocks
         on_success = MagicMock()
         mixin_obj = create_mixin_obj(on_success=on_success)
         func_kwargs = {"var": "value"}
         func_result = -1
-        mixin_obj.get_callback_kwargs = MagicMock(return_value={"var1": "value1"})
+        mixin_obj.get_callback_kwargs = MagicMock(
+            return_value={"var1": "value1"},
+        )
         mixin_obj.run_callback_func = MagicMock()
+        func = MagicMock()
         # Calls
-        mixin_obj.run_on_success_func(func_result, func_kwargs)
+        mixin_obj.run_on_success_func(func, func_result, func_kwargs)
         # Assertions
         mixin_obj.get_callback_kwargs.assert_called_once_with(
-            callback=on_success, func_result=func_result, func_kwargs=func_kwargs
+            callback=on_success,
+            func=func,
+            func_result=func_result,
+            func_kwargs=func_kwargs,
         )
         mixin_obj.run_callback_func.assert_called_once_with(
             on_success, {"var1": "value1"}
@@ -243,19 +258,24 @@ class Test_run_on_failure_func:
     """Test run_on_failure method"""
 
     def test_basic(self):
-        """Tests that `on_failure` callback function gets its kwargs generated and is called."""
+        """Tests that `on_failure` callback function gets its kwargs generated
+        and is called."""
         # Mocks
         on_failure = MagicMock()
         mixin_obj = create_mixin_obj(on_failure=on_failure)
         func_kwargs = {"var": "value"}
         func_exception = Exception("some error")
-        mixin_obj.get_callback_kwargs = MagicMock(return_value={"var1": "value1"})
+        mixin_obj.get_callback_kwargs = MagicMock(
+            return_value={"var1": "value1"},
+        )
         mixin_obj.run_callback_func = MagicMock()
+        func = MagicMock()
         # Calls
-        mixin_obj.run_on_failure_func(func_exception, func_kwargs)
+        mixin_obj.run_on_failure_func(func, func_exception, func_kwargs)
         # Assertions
         mixin_obj.get_callback_kwargs.assert_called_once_with(
             callback=on_failure,
+            func=func,
             func_exception=func_exception,
             func_kwargs=func_kwargs,
         )
@@ -268,7 +288,8 @@ class Test_run_on_end_func:
     """Test run_on_end method"""
 
     def test_basic(self):
-        """Tests that `on_end` callback function gets its kwargs generated and is called."""
+        """Tests that `on_end` callback function gets its kwargs generated
+        and is called."""
         # Mocks
         on_end = MagicMock()
         mixin_obj = create_mixin_obj(on_end=on_end)
@@ -276,29 +297,40 @@ class Test_run_on_end_func:
         func_result = -1
         func_scope_vars = {"var1": "value1"}
         func_exception = Exception("some error")
-        mixin_obj.get_callback_kwargs = MagicMock(return_value={"var1": "value1"})
+        mixin_obj.get_callback_kwargs = MagicMock(
+            return_value={"var1": "value1"},
+        )
         mixin_obj.run_callback_func = MagicMock()
+        func = MagicMock()
         # Calls
         mixin_obj.run_on_end_func(
-            func_result, func_exception, func_kwargs, func_scope_vars
+            func,
+            func_result,
+            func_exception,
+            func_kwargs,
+            func_scope_vars,
         )
         # Assertions
         mixin_obj.get_callback_kwargs.assert_called_once_with(
             callback=on_end,
+            func=func,
             func_result=func_result,
             func_exception=func_exception,
             func_kwargs=func_kwargs,
             func_scope_vars=func_scope_vars,
         )
-        mixin_obj.run_callback_func.assert_called_once_with(on_end, {"var1": "value1"})
+        mixin_obj.run_callback_func.assert_called_once_with(
+            on_end,
+            {"var1": "value1"},
+        )
 
 
 class Test_get_callback_kwargs:
     """Test get_callback_kwargs method"""
 
     def test_no_kwargs(self):
-        """Tests that `get_callback_kwargs` returns empty dict if no parameters are defined
-        in the signature of callback function."""
+        """Tests that `get_callback_kwargs` returns empty dict if no
+        parameters are defined in the signature of callback function."""
 
         # Mocks
         def on_success():
@@ -309,14 +341,16 @@ class Test_get_callback_kwargs:
         mixin_obj = create_mixin_obj(on_success=on_success)
         # Calls
         on_call_kwargs = mixin_obj.get_callback_kwargs(
-            callback=on_success, func_kwargs=func_kwargs, func_result=func_result
+            callback=on_success,
+            func_kwargs=func_kwargs,
+            func_result=func_result,
         )
         # Assertions
         assert on_call_kwargs == {}
 
     def test_all_kwargs(self):
-        """Tests that `get_callback_kwargs` returns all parameters that are defined
-        in the signature of callback function."""
+        """Tests that `get_callback_kwargs` returns all parameters that are
+        defined in the signature of callback function."""
 
         # Mocks
         def on_success(func_result, func_kwargs):
@@ -327,7 +361,9 @@ class Test_get_callback_kwargs:
         mixin_obj = create_mixin_obj(on_success=on_success)
         # Calls
         on_call_kwargs = mixin_obj.get_callback_kwargs(
-            callback=on_success, func_result=func_result, func_kwargs=func_kwargs
+            callback=on_success,
+            func_result=func_result,
+            func_kwargs=func_kwargs,
         )
         # Assertions
         assert on_call_kwargs == {
