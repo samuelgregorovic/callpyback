@@ -205,9 +205,8 @@ In this case, exception will be raised, which will not execute failure handler, 
 - [x] Option to omit callbacks - default callback
 - [x] Option to omit callback's function parameters (specify only those which you need)
 - [x] Option to execute callbacks on the background (new thread) via `@background_callpyback` decorator
-- [ ] Add `asyncio` support for decorated function
-- [ ] Add `asyncio` support for callback function
-- [ ] TBD...
+- [x] Option to pass decorated function reference to all callbacks
+- [ ] To be determined...
 
 See the [open issues](https://github.com/samuelgregorovic/callpyback/issues) for a full list of proposed features (and known issues).
 
