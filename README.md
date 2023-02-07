@@ -31,6 +31,18 @@ You can specify callbacks for on_call, on_success, on_failure, and on_end, and c
 - Option to omit callback's function parameters (specify only those which you need)
 - Option to execute callbacks on the background (new thread) via `@background_callpyback` decorator
 
+## Use cases
+The "callpyback" library can be useful in a variety of real-world scenarios where you need to add custom behavior to your functions at different stages of their execution. For example:
+- Debugging and logging: By using the `on_call`, `on_success`, `on_failure`, and `on_end` callbacks, you can print out messages to help you understand what's happening during the execution of your functions, for example, you may have a function that performs a database operation and you want to log each time the function is called, its parameters, and if it is successful or not. 
+- Monitoring and alerting: By using the "on_success" and "on_failure" callbacks, you can set up custom alerts to notify you when a function has completed successfully or when it has failed.
+- Error handling: By using the "on_failure" callback, you can specify how to handle exceptions raised by your functions and take appropriate actions, such as retrying the function or logging the error message.
+- Background processing: By using the "@background_callback" decorator, you can execute your callbacks on a separate thread, which can be useful in scenarios where you want to run your callbacks in parallel with the rest of your code.
+- Clean-up tasks: By using the "on_end" callback, you can specify what to do after a function has finished executing, for example to release resources or close connections.
+- Asynchronous communication between microservices in a microservice architecture.
+- Improving the performance of long-running processes by breaking them into smaller, asynchronous tasks.
+- Creating real-time, event-driven architectures for web applications, gaming, or IoT applications.
+- Implementing the Observer pattern for decoupled event-driven communication between different parts of an application.
+
 ### Instalation
 Package is currently available under the same name at [![PyPI version](https://badge.fury.io/py/callpyback.svg)](https://badge.fury.io/py/callpyback).
 
