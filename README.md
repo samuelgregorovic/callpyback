@@ -70,127 +70,114 @@ These rules are enforced to allow omitting parameters in the callback function. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-#### 1. Decorating the function with ```CallPyBack``` class decorator with callback functions specified
-
+#### Prerequisites
+Consider following callbacks:
 ```python
-
-def on_success(func_result):
-    print(f'Done with a result: {func_result}!')
-
-def on_failure(func_exception):
-    print(f'Failed with an error: {func_exception}!')
-
-
-@CallPyBack(on_success=on_success, on_failure=on_failure)
-def method()
-    pass
-
-method()
-```
-
-#### 2. Preconfigured ```CallPyBack``` callback custom class
-```python
-
-def on_success(func_result):
-    print(f'Done with a result: {func_result}!')
-
-def on_failure(func_exception):
-    print(f'Failed with an error: {func_exception}!')
-
-custom_callpyback = CallPyBack(
-    on_success=on_success,
-    on_failure=on_failure
-)
-
-@custom_callpyback
-def method():
-    pass
-
-method()
-```
-
-#### 3. Using ```@background_callpyback``` decorator to make callback execute on the background thread
-```python
+def on_call(func, func_kwargs):
+    print('-----ON CALL CALLBACK-----')
+    func_kwargs_repr = ', '.join(f'{key}={val}' for key, val in func_kwargs.items())
+    print(f'Function `{func.__name__}` called with parameters: {func_kwargs_repr}.\n')
 
 @background_callpyback
-def on_success(func_result):
-    print(f'Done with a result: {func_result}!')
+def on_success(func, func_result, func_kwargs):
+    print('-----ON SUCCESS CALLBACK-----')
+    func_kwargs_repr = ', '.join(f'{key}={val}' for key, val in func_kwargs.items())
+    print(f'Function `{func.__name__}` successfully done with a result: {func_result}.')
+    print(f'Was called with parameters: {func_kwargs_repr}\n')
 
-def on_failure(func_exception):
-    print(f'Failed with an error: {func_exception}!')
+@background_callpyback
+def on_failure(func, func_exception, func_kwargs):
+    print('-----ON FAILURE CALLBACK-----')
+    func_kwargs_repr = ', '.join(f'{key}={val}' for key, val in func_kwargs.items())
+    print(f'Function `{func.__name__} failed with an error: {func_exception}!')
+    print(f'Was called with parameters: {func_kwargs_repr}\n')
 
+@background_callpyback
+def on_end(func, func_result, func_exception, func_kwargs, func_scope_vars):
+    print('-----ON END CALLBACK-----')
+    func_kwargs_repr = ', '.join(f'{key}={val}' for key, val in func_kwargs.items())
+    func_scope_vars_repr = ', '.join(f'{key}={val}' for key, val in func_scope_vars.items())
+    if func_exception:
+        print(f'Function `{func.__name__} failed with an error: {func_exception}!')
+    else:
+        print('No exception was raised')
+    print(f'Function `{func.__name__}` done with a result: {func_result}.')
+    print(f'Was called with parameters: {func_kwargs_repr}')
+    print(f'Local variables of the function: {func_scope_vars_repr}')
+```
+and initialization of a decorator:
+```python
 custom_callpyback = CallPyBack(
+    on_call=on_call,
     on_success=on_success,
-    on_failure=on_failure
-)
-
-@custom_callpyback
-def method():
-    pass
-
-method()
-```
-In this case, `on_success` will be executed on the background thread, while `on_failure` will be executed in a blocking way.
-
-
-#### 4. Passing local variables of decorated function, specified in `pass_vars` to `on_end` callback
-```python
-
-def on_end(func_result, func_scope_vars):
-    print(f'Done with a result: {func_result}!')
-    print(f'Local function variables: {func_scope_vars}')
-
-custom_callpyback = CallPyBack(
-    on_end=on_end,
-    pass_vars=('a', 'b')
-)
-
-@custom_callpyback
-def method():
-    a = 0
-    b = 1
-    return a
-
-method()
-```
-
-
-#### 5. Specifiyng default return value by `default_return` parameter.
-```python
-
-
-custom_callpyback = CallPyBack(
-    default_return=-1
-)
-
-@custom_callpyback
-def method():
-     raise KeyError('fail')
-
-result = method()
-```
-In this case, result will be equal to `-1` specified in `default_return`.
-
-
-#### 6. Specifiyng exception classes to be caught by `exception_classes` parameter.
-```python
-
-def on_failure(func_exception):
-    print(f'Failed with an error: {func_exception}!')
-
-custom_callpyback = CallPyBack(
     on_failure=on_failure,
-    exception_classes=(TypeError,)
+    on_end=on_end,
+    default_return='default', 
+    exception_classes=(RuntimeError,),
+    pass_vars=('a',)
 )
+```
+These will be used in following examples:
+
+#### 1. Decorated function executes without error
+```python
 
 @custom_callpyback
-def method():
-     raise KeyError('fail')
+def method(x, y, z=None):
+    a = 42
+    return x + y
 
-result = method()
+result = method(1, 2)
+print(f'Result: {result}')
 ```
-In this case, exception will be raised, which will not execute failure handler, but re-raise original exception.
+will result in
+```bash
+-----ON CALL CALLBACK-----
+Function `method` called with parameters: x=1, y=2, z=None.
+
+Result: 3
+
+-----ON SUCCESS CALLBACK-----
+Function `method` successfully done with a result: 3.
+Was called with parameters: x=1, y=2, z=None
+
+-----ON END CALLBACK-----
+No exception was raised
+Function `method` done with a result: 3.
+Was called with parameters: x=1, y=2, z=None
+Local variables of the function: a=42
+
+```
+`on_success` and `on_end` will be executed on the background thread, while `on_call` will be executed in a blocking way and `on_failure` will not be called.
+
+#### 2. Decorated function raises an error
+```python
+
+@custom_callpyback
+def method(x, y, z=None):
+    a = 42
+    raise RuntimeError("some error")
+
+result = method(1, 2)
+print(f'Result: {result}')
+```
+will result in
+```bash
+-----ON CALL CALLBACK-----
+Function `method` called with parameters: x=1, y=2, z=None.
+
+-----ON FAILURE CALLBACK-----
+Function `method` failed with an error: some error!
+Was called with parameters: x=1, y=2, z=None
+
+-----ON END CALLBACK-----
+Function `method` failed with an error: some error!
+Function `method` done with a result: default.
+Was called with parameters: x=1, y=2, z=None
+Local variables of the function: a=42
+
+```
+`on_failure` and `on_end` will be executed on the background thread, while `on_call` will be executed in a blocking way and `on_success` will not be called.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
