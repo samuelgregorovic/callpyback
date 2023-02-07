@@ -84,7 +84,8 @@ def create_callpyback_obj(
     pass_vars=None,
     exception_classes=(Exception,),
 ):
-    """Construct instance of CallPyBack object from supplied or default values."""
+    """Construct instance of CallPyBack object from supplied or
+    default values."""
     instance = CallPyBack(
         on_call=on_call,
         on_success=on_success,
@@ -125,11 +126,10 @@ class Test_validate_across_mixins:
         callpyback_obj = create_callpyback_obj(
             on_end=_default_callback, pass_vars=("var1", "var2")
         )
+        error_msg = "If `pass_vars` is defined, `on_end` must be defined."
         # Calls
         # Assertions
-        with pytest.raises(
-            RuntimeError, match="If `pass_vars` is defined, `on_end` must be defined."
-        ):
+        with pytest.raises(RuntimeError, match=error_msg):
             callpyback_obj.validate_across_mixins()
 
 
@@ -181,18 +181,25 @@ class Test_main:
         callpyback_obj.set_tracer_profile.assert_has_calls(
             [call(callpyback_obj.tracer), call(None)]
         )
-        callpyback_obj.run_on_call_func.assert_called_with(all_kwargs)
+        callpyback_obj.run_on_call_func.assert_called_with(
+            func,
+            all_kwargs,
+        )
         func.assert_called_once_with(**all_kwargs)
         callpyback_obj.get_func_scope_vars.assert_called_once()
-        callpyback_obj.run_on_success_func.assert_called_once_with(result, all_kwargs)
+        callpyback_obj.run_on_success_func.assert_called_once_with(
+            func,
+            result,
+            all_kwargs,
+        )
         callpyback_obj.run_on_failure_func.assert_not_called()
         callpyback_obj.run_on_end_func.assert_called_once_with(
-            result, None, all_kwargs, []
+            func, result, None, all_kwargs, []
         )
 
     def test_failure_unhandled_ex(self):
         """Tests that `main` method raises an exception when exception is
-        raised in decorated function when `on_end` callback is not specified."""
+        raised in decorated function when `on_end` callback not specified."""
         # Mocks
         func = MagicMock(side_effect=Exception("some error"))
         args = (1,)
@@ -215,7 +222,10 @@ class Test_main:
         callpyback_obj.set_tracer_profile.assert_has_calls(
             [call(callpyback_obj.tracer), call(None)]
         )
-        callpyback_obj.run_on_call_func.assert_called_with(all_kwargs)
+        callpyback_obj.run_on_call_func.assert_called_with(
+            func,
+            all_kwargs,
+        )
         func.assert_called_once_with(**all_kwargs)
         callpyback_obj.get_func_scope_vars.assert_called_once()
         callpyback_obj.run_on_success_func.assert_not_called()
@@ -223,8 +233,8 @@ class Test_main:
         callpyback_obj.run_on_end_func.assert_not_called()
 
     def test_failure_handled_ex(self):
-        """Tests that `main` method does not raise an exception when exception is
-        raised in decorated function when on_end callback is specified."""
+        """Tests that `main` method does not raise an exception when exception
+        is raised in decorated function when on_end callback is specified."""
         # Mocks
         func = MagicMock(side_effect=Exception("some error"))
         args = (1,)
@@ -246,7 +256,10 @@ class Test_main:
         callpyback_obj.set_tracer_profile.assert_has_calls(
             [call(callpyback_obj.tracer), call(None)]
         )
-        callpyback_obj.run_on_call_func.assert_called_with(all_kwargs)
+        callpyback_obj.run_on_call_func.assert_called_with(
+            func,
+            all_kwargs,
+        )
         func.assert_called_once_with(**all_kwargs)
         callpyback_obj.get_func_scope_vars.assert_called_once()
         callpyback_obj.run_on_success_func.assert_not_called()

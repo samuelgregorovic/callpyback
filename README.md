@@ -15,9 +15,15 @@
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/samuelgregorovic/callpyback)](https://github.com/samuelgregorovic/callpyback/pulse)
 
+## Description
+"callpyback" is a comprehensive Python library designed to help developers add callbacks to their functions with ease. It comes with a range of powerful features that make it easy to customize the behavior of your functions in different stages of their execution. 
+
+You can specify callbacks for on_call, on_success, on_failure, and on_end, and customize the default return value from the decorated function. Additionally, you can pass local scope variables of the decorated function to the on_end callback and define expected exceptions to trigger the on_failure callback. If desired, you can also omit callbacks, falling back to default behavior, and choose which parameters of the callback function to use. Furthermore, with the @background_callback decorator, you can execute callbacks on the background, making it easier to manage concurrency in your code.
+
 ## Features
 
 - Support `on_call`, `on_success`, `on_failure` and `on_end` callbacks
+- Pass decorated function **kwargs and function itself to callbacks
 - Option to specify default return from the decorated function
 - Option to pass local scope variables of the decorated function to the `on_end` callback
 - Option to specify exception classes to be expected and invoke `on_failure` callback
@@ -35,6 +41,35 @@ Package is currently available under the same name at [![PyPI version](https://b
 
 
 ### Usage
+
+### ! important note !
+In latest version of `callpyback`, when declaring callback functions, following rules must be obeyed:
+
+a) `on_call()` callback MUST eitheraccept no parameters or combination of the following:
+- `func` - will receive reference to decorated function
+- `func_kwargs` - will receive parameters passed to the function decorated with `CallPyBack`
+
+b) `on_success()` callback MUST either accept no parameters or combination of the following:
+- `func` - will receive reference to decorated function
+- `func_result` - will receive return value of the function decorated with `CallPyBack`
+- `func_kwargs` - will receive parameters passed to the function decorated with `CallPyBack`
+
+c) `on_failure()` callback MUST either accept no parameters or combination of the following:
+- `func` - will receive reference to decorated function
+- `func_exception` - will receive exception raised by the function decorated with `CallPyBack`
+- `func_kwargs` - will receive parameters passed to the function decorated with `CallPyBack`
+
+d) `on_end()` callback MUST either accept no parameters or combination of the following:
+- `func` - will receive reference to decorated function
+- `func_result` - will receive return value of the function decorated with `CallPyBack`
+- `func_exception` - will receive exception raised by the function decorated with `CallPyBack`
+- `func_kwargs` - will receive parameters passed to the function decorated with `CallPyBack`
+- `func_scope_vars` - will receive local variables of the function decorated with `CallPyBack`, whose names were specified in the `pass_vars` decorator parameter.
+
+These rules are enforced to allow omitting parameters in the callback function. This is useful when some of these parameters are not needed for the callback function. If those rules are not obeyed, error will be raised during the initialization of the `CallPyBack` decorator class.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 #### 1. Decorating the function with ```CallPyBack``` class decorator with callback functions specified
 

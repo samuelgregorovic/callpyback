@@ -1,11 +1,16 @@
-from callpyback.utils import background_callpyback, _default_callback, args_to_kwargs
+from callpyback.utils import (
+    background_callpyback,
+    _default_callback,
+    args_to_kwargs,
+)
 
 
 class Test_background_callback:
     """Class containing tests for background_callback function"""
 
     def test_attribute_set(self):
-        """Test whether the background_callback attribute is set to the function."""
+        """Test whether the background_callback attribute is set
+        to the function."""
 
         # Mocks
         @background_callpyback
@@ -25,10 +30,8 @@ class Test__default_callback:
     def test_call(self):
         """Test that _default_callback function executes without errors."""
         # Mocks
-        args = (1, 2, 3)
-        kwargs = {"var1": 1, "var2": 2}
         # Calls
-        _default_callback(*args, **kwargs)
+        _default_callback()
         # Assertions
         assert True
 

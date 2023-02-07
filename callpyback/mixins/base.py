@@ -5,6 +5,20 @@ import threading
 
 from callpyback.utils import _default_callback
 
+CALLBACK_LABELS = ("on_call", "on_success", "on_failure", "on_end")
+CALLBACK_PARAMETER_MAP = {
+    "on_call": {"func", "func_kwargs"},
+    "on_success": {"func", "func_result", "func_kwargs"},
+    "on_failure": {"func", "func_exception", "func_kwargs"},
+    "on_end": {
+        "func",
+        "func_result",
+        "func_exception",
+        "func_kwargs",
+        "func_scope_vars",
+    },
+}
+
 
 class BaseCallBackMixin:
     """Class implementing basic callback features.
@@ -17,26 +31,22 @@ class BaseCallBackMixin:
             Validates callbacks passed to class constructor.
         run_callback_func(func, func_kwargs):
             Executes given callback function with given kwargs.
-        run_on_call_func(func_args, func_kwargs):
+        run_on_call_func(func, func_args, func_kwargs):
             Generates kwargs for given `on_call` callback function and executes
             it with generated kwargs.
-        run_on_success_func(func_result, func_args, func_kwargs):
-            Generates kwargs for given `on_success` callback function and executes
-            it with generated kwargs.
-        run_on_failure_func(func_exception, func_args, func_kwargs):
-            Generates kwargs for given `on_failure` callback function and executes
-            it with generated kwargs.
-        run_on_end_func(func_result, func_exception, func_args, func_kwargs, func_scope_vars):
+        run_on_success_func(func, func_result, func_args, func_kwargs):
+            Generates kwargs for given `on_success` callback function and
+            executes it with generated kwargs.
+        run_on_failure_func(func, func_exception, func_args, func_kwargs):
+            Generates kwargs for given `on_failure` callback function and
+            executes it with generated kwargs.
+        run_on_end_func(func, func_result, func_exception, func_args,
+        func_kwargs, func_scope_vars):
             Generates kwargs for given `on_end` callback function and executes
             it with generated kwargs.
-        get_on_call_kwargs(func_args, func_kwargs):
-            Generates kwargs for `on_call` callback function.
-        get_on_success_kwargs(func_result, func_args, func_kwargs):
-            Generates kwargs for `on_success` callback function.
-        get_on_failure_kwargs(func_exception, func_args, func_kwargs):
-            Generates kwargs for `on_failure` callback function.
-        get_on_end_kwargs(func_result, func_exception, func_args, func_kwargs, func_scope_vars):
-            Generates kwargs for `on_end` callback function.
+        get_callback_kwargs(callback, **kwargs):
+            Generates kwargs for given callback function.
+
     """
 
     def __init__(
@@ -50,13 +60,13 @@ class BaseCallBackMixin:
         """Class constructor. Sets instance variables.
 
         Args:
-            on_call (Callable, optional): Function to be called before function execution.
+            on_call (Callable, optional): Called before execution.
                 Defaults to DEFAULT_ON_CALL_LAMBDA.
-            on_success (Callable, optional): Function to be called after successfull execution.
+            on_success (Callable, optional): Called after success.
                 Defaults to DEFAULT_ON_SUCCESS_LAMBDA.
-            on_failure (Callable, optional): Function to be called after execution with errors.
+            on_failure (Callable, optional): Called after failed execution.
                 Defaults to DEFAULT_ON_FAILURE_LAMBDA.
-            on_end (Callable, optional): Function to be called after execution regardless of result.
+            on_end (Callable, optional): Called after execution.
                 Defaults to DEFAULT_ON_END_LAMBDA.
 
         Returns:
@@ -69,7 +79,12 @@ class BaseCallBackMixin:
         self.on_success = on_success
         self.on_failure = on_failure
         self.on_end = on_end
-        self.callbacks = (self.on_call, self.on_success, self.on_failure, self.on_end)
+        self.callbacks = (
+            self.on_call,
+            self.on_success,
+            self.on_failure,
+            self.on_end,
+        )
 
     def validate_callbacks(self):
         """Validates callbacks passed to class constructor.
@@ -77,6 +92,8 @@ class BaseCallBackMixin:
         Executes following checks:
             1. Callback must be a Callable type.
             2. Callback cannot be an async coroutine.
+            3. Callback must accepted some or none of the parameters specified
+               in CALLBACK_PARAMETER_MAP.
 
         Args:
             N/A
@@ -85,23 +102,46 @@ class BaseCallBackMixin:
         Raises:
             TypeError: Raised if one of the callbacks is not Callable.
             TypeError: Raised if one of the callbacks is an async coroutine.
+            AssertionError: Raised if any callbacks haves invalid parameters.
         """
-        for callback in self.callbacks:
+        for callback_name, callback in zip(CALLBACK_LABELS, self.callbacks):
             if not callable(callback):
-                raise TypeError(f"Callback must be a callable not {type(callback)}.")
+                raise TypeError("Callback must be a callable.")
             if inspect.iscoroutinefunction(callback):
                 raise TypeError(
                     f"Callback `{callback.__name__}` cannot be a coroutine."
                 )
+            self.validate_callback_parameters(callback, callback_name)
+
+    def validate_callback_parameters(self, callback, callback_name):
+        """Validates callback parameters to be accepted by the callback.
+
+        Args:
+            callback (func): callback function.
+            callback_name (str): name of the callback function.
+        Returns:
+            None
+        Raises:
+            AssertionError: Raised if some callback parameters are invalid.
+        """
+        found_params = sorted(inspect.signature(callback).parameters)
+        expected_params = sorted(CALLBACK_PARAMETER_MAP[callback_name])
+        if not set(found_params).issubset(set(expected_params)):
+            raise AssertionError(
+                f"Signature of callback `{callback_name}` is invalid.\n"
+                f"Expected: No parameter or combination of: "
+                f"{','.join(expected_params)}.\n"
+                f"Found: {','.join(found_params)}."
+            )
 
     def run_callback_func(self, func, func_kwargs):
         """Executes given callback function with given kwargs.
-        If callback function was decorated with a `@backgroung_callback` decorator,
+        If callback function was decorated with a `@backgroung_callback`,
         function is executed on a new thread in the background.
 
         Args:
             func (Callable): Callback function to be executed.
-            func_kwargs (dict): Keyword arguments to be passed to the callback function.
+            func_kwargs (dict): Keyword arguments to be passed to the callback.
         Returns:
             None
         Raises:
@@ -113,25 +153,29 @@ class BaseCallBackMixin:
         else:
             func(**func_kwargs)
 
-    def run_on_call_func(self, func_kwargs):
+    def run_on_call_func(self, func, func_kwargs):
         """Generates kwargs for given `on_call` callback function and executes
         it with generated kwargs.
 
         Args:
+            func (func): decorated function
             func_kwargs (dict): Keyword arguments for the decorated function.
         Returns:
             None
         Raises:
             N/A
         """
-        on_call_kwargs = self.get_on_call_kwargs(func_kwargs)
+        on_call_kwargs = self.get_callback_kwargs(
+            callback=self.on_call, func=func, func_kwargs=func_kwargs
+        )
         self.run_callback_func(self.on_call, on_call_kwargs)
 
-    def run_on_success_func(self, func_result, func_kwargs):
-        """Generates kwargs for given `on_success` callback function and executes
-        it with generated kwargs.
+    def run_on_success_func(self, func, func_result, func_kwargs):
+        """Generates kwargs for given `on_success` callback function and
+        executes it with generated kwargs.
 
         Args:
+            func (func): decorated function
             func_result (Any): Result of the decorated function.
             func_kwargs (dict): Keyword arguments for the decorated function.
         Returns:
@@ -139,33 +183,45 @@ class BaseCallBackMixin:
         Raises:
             N/A
         """
-        on_success_kwargs = self.get_on_success_kwargs(func_result, func_kwargs)
+        on_success_kwargs = self.get_callback_kwargs(
+            callback=self.on_success,
+            func=func,
+            func_result=func_result,
+            func_kwargs=func_kwargs,
+        )
         self.run_callback_func(self.on_success, on_success_kwargs)
 
-    def run_on_failure_func(self, func_exception, func_kwargs):
-        """Generates kwargs for given `on_failure` callback function and executes
-        it with generated kwargs.
+    def run_on_failure_func(self, func, func_exception, func_kwargs):
+        """Generates kwargs for given `on_failure` callback function and
+        executes it with generated kwargs.
 
         Args:
-            func_exception (Exception): Exception raised by the decorated function.
+            func (func): decorated function
+            func_exception (Exception): Exception raised by decorated function.
             func_kwargs (dict): Keyword arguments for the decorated function.
         Returns:
             None
         Raises:
             N/A
         """
-        on_failure_kwargs = self.get_on_failure_kwargs(func_exception, func_kwargs)
+        on_failure_kwargs = self.get_callback_kwargs(
+            callback=self.on_failure,
+            func=func,
+            func_exception=func_exception,
+            func_kwargs=func_kwargs,
+        )
         self.run_callback_func(self.on_failure, on_failure_kwargs)
 
     def run_on_end_func(
-        self, func_result, func_exception, func_kwargs, func_scope_vars
+        self, func, func_result, func_exception, func_kwargs, func_scope_vars
     ):
         """Generates kwargs for given `on_end` callback function and executes
         it with generated kwargs.
 
         Args:
+            func (func): decorated function
             func_result (Any): Result of the decorated function.
-            func_exception (Exception): Exception raised by the decorated function.
+            func_exception (Exception): Exception raised by decorated function.
             func_kwargs (dict): Keyword arguments for the decorated function.
             func_scope_vars (dict): Scope variables for the decorated function.
         Returns:
@@ -173,88 +229,30 @@ class BaseCallBackMixin:
         Raises:
             N/A
         """
-        on_end_kwargs = self.get_on_end_kwargs(
-            func_result, func_exception, func_kwargs, func_scope_vars
+        on_end_kwargs = self.get_callback_kwargs(
+            callback=self.on_end,
+            func=func,
+            func_result=func_result,
+            func_exception=func_exception,
+            func_kwargs=func_kwargs,
+            func_scope_vars=func_scope_vars,
         )
         self.run_callback_func(self.on_end, on_end_kwargs)
 
-    def get_on_call_kwargs(self, func_kwargs):
-        """Generates kwargs for `on_call` callback function.
-        Only kwargs specified in callback signature will be passed to the callback function.
+    def get_callback_kwargs(self, callback, **kwargs):
+        """Generates kwargs for given callback function.
+        Only kwargs specified in callback signature will be passed to callback.
         This is to allow omitting unused parameters in user created callbacks.
 
         Args:
-            func_kwargs (dict): Decorated function keyword arguments.
+            kwargs (dict): Decorated function keyword arguments.
 
         Returns:
-            dict: Keyword arguments for `on_call` callback function.
+            dict: Callback function keyword arguments.
         """
-        kwargs = {}
-        params = inspect.signature(self.on_call).parameters
-        if "func_kwargs" in params:
-            kwargs["func_kwargs"] = func_kwargs
-        return kwargs
-
-    def get_on_success_kwargs(self, func_result, func_kwargs):
-        """Generates kwargs for `on_success` callback function.
-        Only kwargs specified in callback signature will be passed to the callback function.
-
-        Args:
-            func_result (Any): Decorated function result (return value).
-            func_kwargs (dict): Decorated function keyword arguments.
-
-        Returns:
-            dict: Keyword arguments for `on_success` callback function.
-        """
-        kwargs = {}
-        params = inspect.signature(self.on_success).parameters
-        if "func_result" in params:
-            kwargs["func_result"] = func_result
-        if "func_kwargs" in params:
-            kwargs["func_kwargs"] = func_kwargs
-        return kwargs
-
-    def get_on_failure_kwargs(self, func_exception, func_kwargs):
-        """Generates kwargs for `on_failure` callback function.
-        Only kwargs specified in callback signature will be passed to the callback function.
-
-        Args:
-            func_exception (Eception): Exception raised during decorated function execution.
-            func_kwargs (dict): Decorated function keyword arguments.
-
-        Returns:
-            dict: Keyword arguments for `on_failure` callback function.
-        """
-        kwargs = {}
-        params = inspect.signature(self.on_failure).parameters
-        if "func_exception" in params:
-            kwargs["func_exception"] = func_exception
-        if "func_kwargs" in params:
-            kwargs["func_kwargs"] = func_kwargs
-        return kwargs
-
-    def get_on_end_kwargs(
-        self, func_result, func_exception, func_kwargs, func_scope_vars
-    ):
-        """Generates kwargs for `on_end` callback function.
-        Only kwargs specified in callback signature will be passed to the callback function.
-
-        Args:
-            func_result (Any): Decorated function result (return value).
-            func_exception (Eception): Exception raised during decorated function execution.
-            func_kwargs (dict): Decorated function keyword arguments.
-
-        Returns:
-            dict: Keyword arguments for `on_end` callback function.
-        """
-        kwargs = {}
-        params = inspect.signature(self.on_end).parameters
-        if "func_result" in params:
-            kwargs["func_result"] = func_result
-        if "func_exception" in params:
-            kwargs["func_exception"] = func_exception
-        if "func_kwargs" in params:
-            kwargs["func_kwargs"] = func_kwargs
-        if "func_scope_vars" in params:
-            kwargs["func_scope_vars"] = func_scope_vars
-        return kwargs
+        callback_kwargs = {}
+        params = inspect.signature(callback).parameters
+        for kwarg_name, kwarg_value in kwargs.items():
+            if kwarg_name in params:
+                callback_kwargs[kwarg_name] = kwarg_value
+        return callback_kwargs
